@@ -188,6 +188,7 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2022-05-01' =
           backendHttpSettings: {
             id: resourceId('Microsoft.Network/applicationGateways/backendHttpSettingsCollection', name, resourceNames.backendHttpSettingFor80)
           }
+          priority: 100
         }
       }
     ]
@@ -221,10 +222,13 @@ resource vaultAccess 'Microsoft.KeyVault/vaults/accessPolicies@2022-07-01' = {
   properties: {
     accessPolicies: [
       {
-        tenantId: applicationGateway.identity.tenantId
-        objectId: applicationGateway.identity.principalId
+        tenantId: agwManagedIdentity.properties.tenantId
+        objectId: agwManagedIdentity.properties.principalId
         permissions: {
           secrets: [
+            'get'
+          ]
+          keys: [
             'get'
           ]
         }

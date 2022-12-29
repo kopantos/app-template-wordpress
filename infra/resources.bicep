@@ -24,7 +24,8 @@ var resourceNames = {
   applicationGateway: naming.applicationGateway.name
 }
 var secretNames = {
-  storageKeyName: 'storageKeyName'
+  connectionString: 'storageConnectionString'
+  storageKey: 'storageKey'
   certificateKeyName: 'certificateName'
   redisConnectionString: 'redisConnectionString'
   mariaDBPassword: 'mariaDBPassword'
@@ -131,7 +132,7 @@ module wordpressapp 'containerapp.bicep' = {
     infraSnetId: network.outputs.infraSnetId 
     logAnalytics: logAnalytics.outputs.logAnalytics
     storageAccountName: resourceNames.storageAccount
-    storageAccountKey: vault.getSecret(secretNames.storageKeyName)
+    storageAccountKey: vault.getSecret(secretNames.storageKey)
     storageShareName: storage.outputs.fileshareName
     dbHost: mariaDB.outputs.hostname
     dbUser: mariaDBAdmin

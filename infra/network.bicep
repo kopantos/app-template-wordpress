@@ -186,7 +186,7 @@ resource agwNsg 'Microsoft.Network/networkSecurityGroups@2022-07-01' = {
           protocol: 'Tcp'
           sourceAddressPrefix: 'GatewayManager'
           sourcePortRange: '*'
-          destinationPortRange: '65503-65534'
+          destinationPortRange: '65200-65535'
           destinationAddressPrefix: '*'
           access: 'Allow'
           priority: 100

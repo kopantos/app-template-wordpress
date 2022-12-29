@@ -12,7 +12,8 @@ param dbUser string
 @secure()
 param dbPassword string
 
-var dbPort = '5432'
+var dbPort = '3306'
+var volumename = 'wpstorage' //sensitive to casing and length. It has to be all lowercase.
 
 module environment 'modules/containerappsEnvironment.module.bicep' = {
   name: 'containerAppEnv-deployement'
@@ -68,11 +69,7 @@ resource wordpressApp 'Microsoft.App/containerApps@2022-06-01-preview' = {
       containers: [
         {
           args: []
-          command: [
-            '/bin/bash'
-            '-c'
-            'bundle exec rails s -p 3000'
-          ]
+          command: []
           env: [
             {
               name: 'DB_HOST'
@@ -95,38 +92,9 @@ resource wordpressApp 'Microsoft.App/containerApps@2022-06-01-preview' = {
               secretRef: 'db-port'
             }
           ]
-          image: 'wordpress:php8.2-fpm'
+          image: 'wordpress:latest'
           name: 'wordpress'
-          probes: [
-            {
-              failureThreshold: 5
-              tcpSocket: {
-                port: 80
-              }
-              timeoutSeconds: 5
-              type: 'Liveness'
-            }
-            {
-              failureThreshold: 5
-              httpGet: {
-                path: '/'
-                port: 80
-                scheme: 'HTTP'
-              }
-              timeoutSeconds: 5
-              type: 'Readiness'
-            }
-            {
-              failureThreshold: 30
-              httpGet: {
-                path: '/'
-                port: 80
-                scheme: 'HTTP'
-              }
-              timeoutSeconds: 5
-              type: 'Startup'
-            }
-          ]
+          probes: []
           resources: {
             cpu: json('0.25')
             memory: '0.5Gi'
@@ -134,7 +102,7 @@ resource wordpressApp 'Microsoft.App/containerApps@2022-06-01-preview' = {
           volumeMounts: [
             {
               mountPath: '/var/www/html'
-              volumeName: 'volStorage'
+              volumeName: volumename
             }
           ]
         }
@@ -144,7 +112,7 @@ resource wordpressApp 'Microsoft.App/containerApps@2022-06-01-preview' = {
       }
       volumes:[
         {
-          name: 'volStorage'
+          name: volumename
           storageName: environment.outputs.webStorageName
           storageType: 'AzureFile'
         }
