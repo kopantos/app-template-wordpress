@@ -162,12 +162,16 @@ module envdnszone 'modules/privateDnsZone.module.bicep' = {
 //9. application gateway
 module agw 'applicationGateway.bicep' = {
   name: 'applicationGateway-deployment'
-  dependsOn: [keyVault]
+  dependsOn: [
+    keyVault
+    wordpressapp
+    envdnszone
+  ]
   params: {
     name: resourceNames.applicationGateway
     location: location
     subnetId: network.outputs.agwSnetId
-    webContainerAppFqdn: wordpressapp.outputs.webFqdn
+    backendPool: wordpressapp.outputs.loadBalancerIP
     appGatewayFQDN: wordpressFqdn
     keyVaultName: resourceNames.keyVault
     certificateKeyName: secretNames.certificateKeyName

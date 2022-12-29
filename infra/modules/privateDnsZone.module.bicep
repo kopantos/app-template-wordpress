@@ -11,7 +11,7 @@ resource privateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
 }
 
 module privateDnsZoneLinks 'privateDnsZoneLink.module.bicep' = if (!empty(vnetIds)) {
-  name: 'PrvDnsZoneLinks-${name}'  
+  name: 'PrvDnsZoneVnetLink'  
   params: {
     privateDnsZoneName: privateDnsZone.name
     vnetIds: vnetIds
@@ -30,6 +30,9 @@ resource dnsRecord 'Microsoft.Network/privateDnsZones/A@2020-06-01' = [for (aRec
       }
     ]
   }
+  dependsOn: [
+    privateDnsZone
+  ]
 }]
 
 output id string = privateDnsZone.id

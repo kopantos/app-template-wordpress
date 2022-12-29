@@ -4,7 +4,7 @@ param tags object = {}
 param subnetId string
 @description('The FQDN of the Application Gateawy.Must match the TLS Certificate.')
 param appGatewayFQDN string
-param webContainerAppFqdn string
+param backendPool string
 param keyVaultName string
 param certificateKeyName string
 
@@ -135,7 +135,7 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2022-05-01' =
         properties: {
           backendAddresses: [
             {
-              fqdn: webContainerAppFqdn
+              ipAddress: backendPool
             }
           ]
         }
@@ -198,7 +198,7 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2022-05-01' =
         name: 'webProbe'
         properties: {
           protocol: 'Http'
-          host: webContainerAppFqdn
+          host: backendPool
           path: webPath
           interval: 30
           timeout: 30
