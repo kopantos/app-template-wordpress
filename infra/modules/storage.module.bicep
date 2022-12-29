@@ -2,6 +2,8 @@ param location string
 param name string
 param tags object = {}
 param secretNames object = {}
+param virtualNetworkRules array = []
+param ipRules array = []
 
 @allowed([
   'BlobStorage'
@@ -42,7 +44,9 @@ resource storage 'Microsoft.Storage/storageAccounts@2019-06-01' = {
     supportsHttpsTrafficOnly: true
     networkAcls: {
       bypass: 'AzureServices'
-      defaultAction: 'Allow'
+      defaultAction: 'Deny'
+      virtualNetworkRules: virtualNetworkRules
+      ipRules: ipRules
     }
   }
 }

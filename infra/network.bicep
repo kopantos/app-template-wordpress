@@ -20,9 +20,19 @@ module vnet 'modules/vnet.module.bicep' = {
     addressPrefix: isProd ? '10.0.0.0/16' : '10.0.0.0/16'
     appSnet: {
       addressPrefix: isProd ? '10.0.1.0/24' : '10.0.1.0/24'
+      serviceEndpoints: [
+        {
+          service: 'Microsoft.Storage'
+        }
+      ]
     }
     infraSnet: {
       addressPrefix: isProd ? '10.0.2.0/23' : '10.0.2.0/23'
+      serviceEndpoints: [
+        {
+          service: 'Microsoft.Storage'
+        }
+      ]
     }
     bastionSnet: {
       addressPrefix: isProd ? '10.0.0.0/25' : '10.0.0.0/25'

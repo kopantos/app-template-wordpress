@@ -4,9 +4,11 @@ param tags object = {}
 param subnetId string
 @description('The FQDN of the Application Gateawy.Must match the TLS Certificate.')
 param appGatewayFQDN string
-param backendPool string
+//param backendPool string
+param backendFqdn string
 param keyVaultName string
 param certificateKeyName string
+param logAnalyticsWorkspaceId string
 
 var resourceNames = {
   publicIP: 'pip-${name}'
@@ -135,7 +137,8 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2022-05-01' =
         properties: {
           backendAddresses: [
             {
-              ipAddress: backendPool
+              //ipAddress: backendPool
+              fqdn: backendFqdn
             }
           ]
         }
@@ -198,7 +201,7 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2022-05-01' =
         name: 'webProbe'
         properties: {
           protocol: 'Http'
-          host: backendPool
+          host: backendFqdn
           path: webPath
           interval: 30
           timeout: 30
@@ -231,6 +234,34 @@ resource vaultAccess 'Microsoft.KeyVault/vaults/accessPolicies@2022-07-01' = {
           keys: [
             'get'
           ]
+        }
+      }
+    ]
+  }
+}
+
+resource agwDiagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: 'agw-diagnostics'
+  scope: applicationGateway
+  properties: {
+    workspaceId: logAnalyticsWorkspaceId
+    logs: [
+      {
+        categoryGroup: 'allLogs'
+        enabled: true
+        retentionPolicy: {
+          enabled: false
+          days: 0
+        }
+      }
+    ]
+    metrics: [
+      {
+        category: 'AllMetrics'
+        enabled: false
+        retentionPolicy: {
+          enabled: false
+          days: 0
         }
       }
     ]

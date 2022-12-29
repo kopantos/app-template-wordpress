@@ -65,6 +65,16 @@ module storage 'modules/storage.module.bicep' = {
     secretNames: secretNames
     keyVaultName: resourceNames.keyVault
     tags: tags
+    virtualNetworkRules: [
+      {
+        id: network.outputs.infraSnetId
+        action: 'Allow'
+      }
+      {
+        id: network.outputs.appSnetId
+        action: 'Allow'
+      }
+    ]
   }
 }
 
@@ -171,10 +181,12 @@ module agw 'applicationGateway.bicep' = {
     name: resourceNames.applicationGateway
     location: location
     subnetId: network.outputs.agwSnetId
-    backendPool: wordpressapp.outputs.loadBalancerIP
+    //backendPool: wordpressapp.outputs.loadBalancerIP
+    backendFqdn: wordpressapp.outputs.webFqdn
     appGatewayFQDN: wordpressFqdn
     keyVaultName: resourceNames.keyVault
     certificateKeyName: secretNames.certificateKeyName
+    logAnalyticsWorkspaceId: logAnalytics.outputs.workspaceId
     tags: tags
   }
 }
