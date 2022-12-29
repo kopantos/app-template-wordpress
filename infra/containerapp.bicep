@@ -122,4 +122,6 @@ resource wordpressApp 'Microsoft.App/containerApps@2022-06-01-preview' = {
 }
 
 output webFqdn string = wordpressApp.properties.latestRevisionFqdn
-
+output webLatestRevisionName string = wordpressApp.properties.latestRevisionName
+output envSuffix string = environment.outputs.envSuffix
+output loadBalancerIP string = environment.outputs.loadBalancerIP

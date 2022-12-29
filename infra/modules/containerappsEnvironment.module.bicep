@@ -57,4 +57,6 @@ resource webStorage 'Microsoft.App/managedEnvironments/storages@2022-06-01-previ
 
 output containerEnvId string = containerEnvironment.id
 output webStorageName string = webStorage.name
+output envSuffix string = containerEnvironment.properties.defaultDomain
+output loadBalancerIP string = containerEnvironment.properties.staticIp
 

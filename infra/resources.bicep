@@ -140,7 +140,26 @@ module wordpressapp 'containerapp.bicep' = {
   }
 }
 
-//7. application gateway
+//7. DNS Zone for created endpoint
+module envdnszone 'modules/privateDnsZone.module.bicep' = {
+  name: 'envdnszone-deployment'
+  params: {
+    name: wordpressapp.outputs.envSuffix
+    vnetIds: [
+      network.outputs.vnetId
+    ]
+    aRecords: [
+      {
+        name: wordpressapp.outputs.webLatestRevisionName
+        ipv4Address: wordpressapp.outputs.loadBalancerIP
+      }
+    ]
+    tags: tags
+    registrationEnabled: true
+  }
+}
+
+//9. application gateway
 module agw 'applicationGateway.bicep' = {
   name: 'applicationGateway-deployment'
   dependsOn: [keyVault]
