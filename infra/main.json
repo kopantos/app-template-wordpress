@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.13.1.58284",
-      "templateHash": "4566546837009820344"
+      "templateHash": "4615683932694718687"
     }
   },
   "parameters": {
@@ -1220,7 +1220,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.13.1.58284",
-              "templateHash": "17808383933395833391"
+              "templateHash": "4502468734737075795"
             }
           },
           "parameters": {
@@ -1272,7 +1272,8 @@
               "applicationGateway": "[parameters('naming').applicationGateway.name]"
             },
             "secretNames": {
-              "storageKeyName": "storageKeyName",
+              "connectionString": "storageConnectionString",
+              "storageKey": "storageKey",
               "certificateKeyName": "certificateName",
               "redisConnectionString": "redisConnectionString",
               "mariaDBPassword": "mariaDBPassword",
@@ -1323,7 +1324,7 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.13.1.58284",
-                      "templateHash": "12026352955284029543"
+                      "templateHash": "16756309386722999890"
                     }
                   },
                   "parameters": {
@@ -1486,7 +1487,7 @@
                               "protocol": "Tcp",
                               "sourceAddressPrefix": "GatewayManager",
                               "sourcePortRange": "*",
-                              "destinationPortRange": "65503-65534",
+                              "destinationPortRange": "65200-65535",
                               "destinationAddressPrefix": "*",
                               "access": "Allow",
                               "priority": 100,
@@ -1974,7 +1975,7 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.13.1.58284",
-                      "templateHash": "18089692234866672205"
+                      "templateHash": "5747606531776062824"
                     }
                   },
                   "parameters": {
@@ -2058,7 +2059,7 @@
                     {
                       "type": "Microsoft.KeyVault/vaults/secrets",
                       "apiVersion": "2022-07-01",
-                      "name": "[format('{0}/{1}', parameters('keyVaultName'), 'storageAccountKey')]",
+                      "name": "[format('{0}/{1}', parameters('keyVaultName'), parameters('secretNames').storageKey)]",
                       "properties": {
                         "value": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', toLower(replace(parameters('name'), '-', ''))), '2019-06-01').keys[0].value]"
                       },
@@ -2069,7 +2070,7 @@
                     {
                       "type": "Microsoft.KeyVault/vaults/secrets",
                       "apiVersion": "2019-09-01",
-                      "name": "[format('{0}/{1}', parameters('keyVaultName'), parameters('secretNames').storageKeyName)]",
+                      "name": "[format('{0}/{1}', parameters('keyVaultName'), parameters('secretNames').connectionString)]",
                       "properties": {
                         "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1}', toLower(replace(parameters('name'), '-', '')), listKeys(resourceId('Microsoft.Storage/storageAccounts', toLower(replace(parameters('name'), '-', ''))), '2019-06-01').keys[0].value)]"
                       },
@@ -2462,7 +2463,7 @@
                       "keyVault": {
                         "id": "[resourceId('Microsoft.KeyVault/vaults', variables('resourceNames').keyVault)]"
                       },
-                      "secretName": "[variables('secretNames').storageKeyName]"
+                      "secretName": "[variables('secretNames').storageKey]"
                     }
                   },
                   "storageShareName": {
@@ -2490,7 +2491,7 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.13.1.58284",
-                      "templateHash": "6112007289995489517"
+                      "templateHash": "9675721735134651803"
                     }
                   },
                   "parameters": {
@@ -2530,7 +2531,8 @@
                     }
                   },
                   "variables": {
-                    "dbPort": "5432"
+                    "dbPort": "3306",
+                    "volumename": "wpstorage"
                   },
                   "resources": [
                     {
@@ -2576,11 +2578,7 @@
                           "containers": [
                             {
                               "args": [],
-                              "command": [
-                                "/bin/bash",
-                                "-c",
-                                "bundle exec rails s -p 3000"
-                              ],
+                              "command": [],
                               "env": [
                                 {
                                   "name": "DB_HOST",
@@ -2603,38 +2601,9 @@
                                   "secretRef": "db-port"
                                 }
                               ],
-                              "image": "wordpress:php8.2-fpm",
+                              "image": "wordpress:latest",
                               "name": "wordpress",
-                              "probes": [
-                                {
-                                  "failureThreshold": 5,
-                                  "tcpSocket": {
-                                    "port": 80
-                                  },
-                                  "timeoutSeconds": 5,
-                                  "type": "Liveness"
-                                },
-                                {
-                                  "failureThreshold": 5,
-                                  "httpGet": {
-                                    "path": "/",
-                                    "port": 80,
-                                    "scheme": "HTTP"
-                                  },
-                                  "timeoutSeconds": 5,
-                                  "type": "Readiness"
-                                },
-                                {
-                                  "failureThreshold": 30,
-                                  "httpGet": {
-                                    "path": "/",
-                                    "port": 80,
-                                    "scheme": "HTTP"
-                                  },
-                                  "timeoutSeconds": 5,
-                                  "type": "Startup"
-                                }
-                              ],
+                              "probes": [],
                               "resources": {
                                 "cpu": "[json('0.25')]",
                                 "memory": "0.5Gi"
@@ -2642,7 +2611,7 @@
                               "volumeMounts": [
                                 {
                                   "mountPath": "/var/www/html",
-                                  "volumeName": "volStorage"
+                                  "volumeName": "[variables('volumename')]"
                                 }
                               ]
                             }
@@ -2652,7 +2621,7 @@
                           },
                           "volumes": [
                             {
-                              "name": "volStorage",
+                              "name": "[variables('volumename')]",
                               "storageName": "[reference(resourceId('Microsoft.Resources/deployments', 'containerAppEnv-deployement'), '2020-10-01').outputs.webStorageName.value]",
                               "storageType": "AzureFile"
                             }
@@ -2702,7 +2671,7 @@
                             "_generator": {
                               "name": "bicep",
                               "version": "0.13.1.58284",
-                              "templateHash": "7799249929556618869"
+                              "templateHash": "13102430568640035995"
                             }
                           },
                           "parameters": {
@@ -2793,6 +2762,14 @@
                             "webStorageName": {
                               "type": "string",
                               "value": "webstorage"
+                            },
+                            "envSuffix": {
+                              "type": "string",
+                              "value": "[reference(resourceId('Microsoft.App/managedEnvironments', variables('containerEnvName')), '2022-06-01-preview').defaultDomain]"
+                            },
+                            "loadBalancerIP": {
+                              "type": "string",
+                              "value": "[reference(resourceId('Microsoft.App/managedEnvironments', variables('containerEnvName')), '2022-06-01-preview').staticIp]"
                             }
                           }
                         }
@@ -2803,6 +2780,18 @@
                     "webFqdn": {
                       "type": "string",
                       "value": "[reference(resourceId('Microsoft.App/containerApps', format('{0}web', parameters('containerAppName'))), '2022-06-01-preview').latestRevisionFqdn]"
+                    },
+                    "webLatestRevisionName": {
+                      "type": "string",
+                      "value": "[reference(resourceId('Microsoft.App/containerApps', format('{0}web', parameters('containerAppName'))), '2022-06-01-preview').latestRevisionName]"
+                    },
+                    "envSuffix": {
+                      "type": "string",
+                      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'containerAppEnv-deployement'), '2020-10-01').outputs.envSuffix.value]"
+                    },
+                    "loadBalancerIP": {
+                      "type": "string",
+                      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'containerAppEnv-deployement'), '2020-10-01').outputs.loadBalancerIP.value]"
                     }
                   }
                 }
@@ -2813,6 +2802,196 @@
                 "[resourceId('Microsoft.Resources/deployments', 'mariaDB-deployment')]",
                 "[resourceId('Microsoft.Resources/deployments', 'vnet-deployment')]",
                 "[resourceId('Microsoft.Resources/deployments', 'storage-deployment')]"
+              ]
+            },
+            {
+              "type": "Microsoft.Resources/deployments",
+              "apiVersion": "2020-10-01",
+              "name": "envdnszone-deployment",
+              "properties": {
+                "expressionEvaluationOptions": {
+                  "scope": "inner"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                  "name": {
+                    "value": "[reference(resourceId('Microsoft.Resources/deployments', 'wordpressapp-deployment'), '2020-10-01').outputs.envSuffix.value]"
+                  },
+                  "vnetIds": {
+                    "value": [
+                      "[reference(resourceId('Microsoft.Resources/deployments', 'vnet-deployment'), '2020-10-01').outputs.vnetId.value]"
+                    ]
+                  },
+                  "aRecords": {
+                    "value": [
+                      {
+                        "name": "[reference(resourceId('Microsoft.Resources/deployments', 'wordpressapp-deployment'), '2020-10-01').outputs.webLatestRevisionName.value]",
+                        "ipv4Address": "[reference(resourceId('Microsoft.Resources/deployments', 'wordpressapp-deployment'), '2020-10-01').outputs.loadBalancerIP.value]"
+                      }
+                    ]
+                  },
+                  "tags": {
+                    "value": "[parameters('tags')]"
+                  },
+                  "registrationEnabled": {
+                    "value": true
+                  }
+                },
+                "template": {
+                  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                  "contentVersion": "1.0.0.0",
+                  "metadata": {
+                    "_generator": {
+                      "name": "bicep",
+                      "version": "0.13.1.58284",
+                      "templateHash": "13489874146369079482"
+                    }
+                  },
+                  "parameters": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "tags": {
+                      "type": "object",
+                      "defaultValue": {}
+                    },
+                    "registrationEnabled": {
+                      "type": "bool",
+                      "defaultValue": false
+                    },
+                    "vnetIds": {
+                      "type": "array"
+                    },
+                    "aRecords": {
+                      "type": "array",
+                      "defaultValue": []
+                    }
+                  },
+                  "resources": [
+                    {
+                      "type": "Microsoft.Network/privateDnsZones",
+                      "apiVersion": "2020-06-01",
+                      "name": "[parameters('name')]",
+                      "location": "Global",
+                      "tags": "[parameters('tags')]"
+                    },
+                    {
+                      "copy": {
+                        "name": "dnsRecord",
+                        "count": "[length(parameters('aRecords'))]"
+                      },
+                      "type": "Microsoft.Network/privateDnsZones/A",
+                      "apiVersion": "2020-06-01",
+                      "name": "[format('{0}/{1}', parameters('name'), parameters('aRecords')[copyIndex()].name)]",
+                      "properties": {
+                        "ttl": 60,
+                        "aRecords": [
+                          {
+                            "ipv4Address": "[parameters('aRecords')[copyIndex()].ipv4Address]"
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "condition": "[not(empty(parameters('vnetIds')))]",
+                      "type": "Microsoft.Resources/deployments",
+                      "apiVersion": "2020-10-01",
+                      "name": "[format('PrvDnsZoneLinks-{0}', parameters('name'))]",
+                      "properties": {
+                        "expressionEvaluationOptions": {
+                          "scope": "inner"
+                        },
+                        "mode": "Incremental",
+                        "parameters": {
+                          "privateDnsZoneName": {
+                            "value": "[parameters('name')]"
+                          },
+                          "vnetIds": {
+                            "value": "[parameters('vnetIds')]"
+                          },
+                          "registrationEnabled": {
+                            "value": "[parameters('registrationEnabled')]"
+                          },
+                          "tags": {
+                            "value": "[parameters('tags')]"
+                          }
+                        },
+                        "template": {
+                          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                          "contentVersion": "1.0.0.0",
+                          "metadata": {
+                            "_generator": {
+                              "name": "bicep",
+                              "version": "0.13.1.58284",
+                              "templateHash": "5408004876119683759"
+                            }
+                          },
+                          "parameters": {
+                            "privateDnsZoneName": {
+                              "type": "string"
+                            },
+                            "tags": {
+                              "type": "object",
+                              "defaultValue": {}
+                            },
+                            "registrationEnabled": {
+                              "type": "bool",
+                              "defaultValue": false
+                            },
+                            "vnetIds": {
+                              "type": "array"
+                            }
+                          },
+                          "resources": [
+                            {
+                              "copy": {
+                                "name": "privateDnsZoneLinks",
+                                "count": "[length(parameters('vnetIds'))]"
+                              },
+                              "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+                              "apiVersion": "2020-06-01",
+                              "name": "[format('{0}/{1}-link-{2}', parameters('privateDnsZoneName'), parameters('privateDnsZoneName'), copyIndex())]",
+                              "location": "Global",
+                              "tags": "[parameters('tags')]",
+                              "properties": {
+                                "registrationEnabled": "[parameters('registrationEnabled')]",
+                                "virtualNetwork": {
+                                  "id": "[parameters('vnetIds')[copyIndex()]]"
+                                }
+                              }
+                            }
+                          ],
+                          "outputs": {
+                            "ids": {
+                              "type": "array",
+                              "copy": {
+                                "count": "[length(range(0, length(parameters('vnetIds'))))]",
+                                "input": "[resourceId('Microsoft.Network/privateDnsZones/virtualNetworkLinks', split(format('{0}/{1}-link-{2}', parameters('privateDnsZoneName'), parameters('privateDnsZoneName'), range(0, length(parameters('vnetIds')))[copyIndex()]), '/')[0], split(format('{0}/{1}-link-{2}', parameters('privateDnsZoneName'), parameters('privateDnsZoneName'), range(0, length(parameters('vnetIds')))[copyIndex()]), '/')[1])]"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "dependsOn": [
+                        "[resourceId('Microsoft.Network/privateDnsZones', parameters('name'))]"
+                      ]
+                    }
+                  ],
+                  "outputs": {
+                    "id": {
+                      "type": "string",
+                      "value": "[resourceId('Microsoft.Network/privateDnsZones', parameters('name'))]"
+                    },
+                    "linkIds": {
+                      "type": "array",
+                      "value": "[reference(resourceId('Microsoft.Resources/deployments', format('PrvDnsZoneLinks-{0}', parameters('name'))), '2020-10-01').outputs.ids.value]"
+                    }
+                  }
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Resources/deployments', 'vnet-deployment')]",
+                "[resourceId('Microsoft.Resources/deployments', 'wordpressapp-deployment')]"
               ]
             },
             {
@@ -2857,7 +3036,7 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.13.1.58284",
-                      "templateHash": "15715481472080573613"
+                      "templateHash": "1690499922636511787"
                     }
                   },
                   "parameters": {
@@ -2898,15 +3077,13 @@
                       "streamingBackendAddressPool": "[format('streaming-beap-capp-{0}', parameters('name'))]",
                       "frontendPort443": "[format('feport-{0}-443', parameters('name'))]",
                       "frontendIpConfiguration": "[format('feip-{0}', parameters('name'))]",
-                      "backendHttpSettingFor3000": "[format('be-htst-{0}-3000', parameters('name'))]",
-                      "backendHttpSettingFor4000": "[format('be-htst-{0}-4000', parameters('name'))]",
+                      "backendHttpSettingFor80": "[format('be-htst-{0}-80', parameters('name'))]",
                       "httpListener": "[format('httplstn-{0}', parameters('name'))]",
                       "urlPathMaps": "[format('urlPathmaps-{0}', parameters('name'))]",
                       "requestRoutingRule": "[format('rqrt-{0}', parameters('name'))]",
                       "redirectConfiguration": "[format('rdrcfg-{0}', parameters('name'))]"
                     },
                     "webPath": "/",
-                    "streamingPath": "/api/v1/streaming",
                     "keyVaultSecretsUserRoleDefinitionId": "4633458b-17de-408a-b874-0445c86b69e6"
                   },
                   "resources": [
@@ -3025,9 +3202,9 @@
                         ],
                         "backendHttpSettingsCollection": [
                           {
-                            "name": "[variables('resourceNames').backendHttpSettingFor3000]",
+                            "name": "[variables('resourceNames').backendHttpSettingFor80]",
                             "properties": {
-                              "port": 3000,
+                              "port": 80,
                               "protocol": "Http",
                               "cookieBasedAffinity": "Enabled",
                               "affinityCookieName": "",
@@ -3035,20 +3212,6 @@
                               "requestTimeout": 120,
                               "probe": {
                                 "id": "[resourceId('Microsoft.Network/applicationGateways/probes', parameters('name'), 'webProbe')]"
-                              }
-                            }
-                          },
-                          {
-                            "name": "[variables('resourceNames').backendHttpSettingFor4000]",
-                            "properties": {
-                              "port": 4000,
-                              "protocol": "Http",
-                              "cookieBasedAffinity": "Enabled",
-                              "affinityCookieName": "",
-                              "pickHostNameFromBackendAddress": false,
-                              "requestTimeout": 120,
-                              "probe": {
-                                "id": "[resourceId('Microsoft.Network/applicationGateways/probes', parameters('name'), 'streamingProbe')]"
                               }
                             }
                           }
@@ -3078,53 +3241,17 @@
                               "httpListener": {
                                 "id": "[resourceId('Microsoft.Network/applicationGateways/httpListeners', parameters('name'), variables('resourceNames').httpListener)]"
                               },
-                              "urlPathMap": {
-                                "id": "[resourceId('Microsoft.Network/applicationGateways/urlPathMaps', parameters('name'), variables('resourceNames').urlPathMaps)]"
-                              }
-                            }
-                          }
-                        ],
-                        "urlPathMaps": [
-                          {
-                            "name": "[variables('resourceNames').urlPathMaps]",
-                            "properties": {
-                              "defaultBackendAddressPool": {
+                              "backendAddressPool": {
                                 "id": "[resourceId('Microsoft.Network/applicationGateways/backendAddressPools', parameters('name'), variables('resourceNames').webBackendAddressPool)]"
                               },
-                              "defaultBackendHttpSettings": {
-                                "id": "[resourceId('Microsoft.Network/applicationGateways/backendHttpSettingsCollection', parameters('name'), variables('resourceNames').backendHttpSettingFor3000)]"
+                              "backendHttpSettings": {
+                                "id": "[resourceId('Microsoft.Network/applicationGateways/backendHttpSettingsCollection', parameters('name'), variables('resourceNames').backendHttpSettingFor80)]"
                               },
-                              "pathRules": [
-                                {
-                                  "properties": {
-                                    "paths": [
-                                      "[variables('webPath')]"
-                                    ],
-                                    "backendAddressPool": {
-                                      "id": "[resourceId('Microsoft.Network/applicationGateways/backendAddressPools', parameters('name'), variables('resourceNames').webBackendAddressPool)]"
-                                    },
-                                    "backendHttpSettings": {
-                                      "id": "[resourceId('Microsoft.Network/applicationGateways/backendHttpSettingsCollection', parameters('name'), variables('resourceNames').backendHttpSettingFor3000)]"
-                                    }
-                                  }
-                                },
-                                {
-                                  "properties": {
-                                    "paths": [
-                                      "[variables('streamingPath')]"
-                                    ],
-                                    "backendAddressPool": {
-                                      "id": "[resourceId('Microsoft.Network/applicationGateways/backendAddressPools', parameters('name'), variables('resourceNames').streamingBackendAddressPool)]"
-                                    },
-                                    "backendHttpSettings": {
-                                      "id": "[resourceId('Microsoft.Network/applicationGateways/backendHttpSettingsCollection', parameters('name'), variables('resourceNames').backendHttpSettingFor4000)]"
-                                    }
-                                  }
-                                }
-                              ]
+                              "priority": 100
                             }
                           }
                         ],
+                        "urlPathMaps": [],
                         "probes": [
                           {
                             "name": "webProbe",
@@ -3158,10 +3285,13 @@
                       "properties": {
                         "accessPolicies": [
                           {
-                            "tenantId": "[reference(resourceId('Microsoft.Network/applicationGateways', parameters('name')), '2022-05-01', 'full').identity.tenantId]",
-                            "objectId": "[reference(resourceId('Microsoft.Network/applicationGateways', parameters('name')), '2022-05-01', 'full').identity.principalId]",
+                            "tenantId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'agw-managed-identity'), '2022-01-31-preview').tenantId]",
+                            "objectId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'agw-managed-identity'), '2022-01-31-preview').principalId]",
                             "permissions": {
                               "secrets": [
+                                "get"
+                              ],
+                              "keys": [
                                 "get"
                               ]
                             }
@@ -3169,7 +3299,7 @@
                         ]
                       },
                       "dependsOn": [
-                        "[resourceId('Microsoft.Network/applicationGateways', parameters('name'))]"
+                        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'agw-managed-identity')]"
                       ]
                     }
                   ],
