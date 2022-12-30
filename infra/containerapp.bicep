@@ -1,6 +1,7 @@
 param location string
 param tags object = {}
 param containerAppName string
+param wordpressFqdn string
 param infraSnetId string
 param logAnalytics object 
 param storageAccountName string 
@@ -14,6 +15,7 @@ param dbPassword string
 
 var dbPort = '3306'
 var volumename = 'wpstorage' //sensitive to casing and length. It has to be all lowercase.
+var dbName = 'wordpress'
 
 module environment 'modules/containerappsEnvironment.module.bicep' = {
   name: 'containerAppEnv-deployement'
@@ -56,11 +58,19 @@ resource wordpressApp 'Microsoft.App/containerApps@2022-06-01-preview' = {
         }
         {
           name: 'db-name'
-          value: 'mastodon-prod'
+          value: dbName
         }
         {
           name: 'db-pass'
           value: dbPassword
+        }
+        {
+          name: 'db-siteurl'
+          value: wordpressFqdn
+        }
+        {
+          name: 'db-home'
+          value: wordpressFqdn
         }
       ]
     }
@@ -90,6 +100,14 @@ resource wordpressApp 'Microsoft.App/containerApps@2022-06-01-preview' = {
             {
               name: 'DB_PORT'
               secretRef: 'db-port'
+            }
+            {
+              name: 'WP_SITEURL'
+              secretRef: 'db-siteurl'
+            }
+            {
+              name: 'WP_HOME'
+              secretRef: 'db-home'
             }
           ]
           image: 'wordpress:latest'

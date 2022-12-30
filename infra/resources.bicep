@@ -139,6 +139,7 @@ module wordpressapp 'containerapp.bicep' = {
     tags: tags
     location: location    
     containerAppName: resourceNames.containerAppName
+    wordpressFqdn: wordpressFqdn
     infraSnetId: network.outputs.infraSnetId 
     logAnalytics: logAnalytics.outputs.logAnalytics
     storageAccountName: resourceNames.storageAccount

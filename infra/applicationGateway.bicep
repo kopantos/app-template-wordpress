@@ -152,7 +152,7 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2022-05-01' =
           protocol: 'Http'
           cookieBasedAffinity: 'Enabled'
           affinityCookieName: ''
-          pickHostNameFromBackendAddress: false
+          pickHostNameFromBackendAddress: true
           requestTimeout: 120
           probe:{
             id: resourceId('Microsoft.Network/applicationGateways/probes', name, 'webProbe')
