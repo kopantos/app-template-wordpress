@@ -85,6 +85,8 @@ module mariaDB 'modules/mariaDB.module.bicep' = {
     dbPassword: mariaDBPassword
     location: location
     serverName: resourceNames.mariadb
+    infraSnetId: network.outputs.infraSnetId
+    appSnetId: network.outputs.appSnetId
     tags: tags
     administratorLogin: mariaDBAdmin
     useFlexibleServer: false

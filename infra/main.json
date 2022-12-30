@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.13.1.58284",
-      "templateHash": "2088392613196240952"
+      "templateHash": "17940381597422138902"
     }
   },
   "parameters": {
@@ -1220,7 +1220,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.13.1.58284",
-              "templateHash": "4074126772188537131"
+              "templateHash": "15364006623000582613"
             }
           },
           "parameters": {
@@ -1324,7 +1324,7 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.13.1.58284",
-                      "templateHash": "13355514811755031638"
+                      "templateHash": "1116577448257972030"
                     }
                   },
                   "parameters": {
@@ -1578,6 +1578,9 @@
                               "serviceEndpoints": [
                                 {
                                   "service": "Microsoft.Storage"
+                                },
+                                {
+                                  "service": "Microsoft.Sql"
                                 }
                               ]
                             }
@@ -1588,6 +1591,9 @@
                               "serviceEndpoints": [
                                 {
                                   "service": "Microsoft.Storage"
+                                },
+                                {
+                                  "service": "Microsoft.Sql"
                                 }
                               ]
                             }
@@ -2155,6 +2161,12 @@
                   "serverName": {
                     "value": "[variables('resourceNames').mariadb]"
                   },
+                  "infraSnetId": {
+                    "value": "[reference(resourceId('Microsoft.Resources/deployments', 'vnet-deployment'), '2020-10-01').outputs.infraSnetId.value]"
+                  },
+                  "appSnetId": {
+                    "value": "[reference(resourceId('Microsoft.Resources/deployments', 'vnet-deployment'), '2020-10-01').outputs.appSnetId.value]"
+                  },
                   "tags": {
                     "value": "[parameters('tags')]"
                   },
@@ -2172,7 +2184,7 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.13.1.58284",
-                      "templateHash": "10693605158299908815"
+                      "templateHash": "9273047708141704716"
                     }
                   },
                   "parameters": {
@@ -2189,6 +2201,12 @@
                     "administratorLogin": {
                       "type": "string",
                       "defaultValue": "dbadmin"
+                    },
+                    "infraSnetId": {
+                      "type": "string"
+                    },
+                    "appSnetId": {
+                      "type": "string"
                     },
                     "dbPassword": {
                       "type": "secureString"
@@ -2215,7 +2233,7 @@
                       },
                       "properties": {
                         "minimalTlsVersion": "TLSEnforcementDisabled",
-                        "publicNetworkAccess": "Disabled",
+                        "publicNetworkAccess": "Enabled",
                         "sslEnforcement": "Disabled",
                         "storageProfile": {
                           "backupRetentionDays": 7,
@@ -2228,6 +2246,45 @@
                         "administratorLogin": "[parameters('administratorLogin')]",
                         "administratorLoginPassword": "[parameters('dbPassword')]"
                       }
+                    },
+                    {
+                      "condition": "[not(parameters('useFlexibleServer'))]",
+                      "type": "Microsoft.DBforMariaDB/servers/virtualNetworkRules",
+                      "apiVersion": "2018-06-01",
+                      "name": "[format('{0}/{1}', parameters('serverName'), 'infrase')]",
+                      "properties": {
+                        "ignoreMissingVnetServiceEndpoint": false,
+                        "virtualNetworkSubnetId": "[parameters('infraSnetId')]"
+                      },
+                      "dependsOn": [
+                        "[resourceId('Microsoft.DBforMariaDB/servers', parameters('serverName'))]"
+                      ]
+                    },
+                    {
+                      "condition": "[not(parameters('useFlexibleServer'))]",
+                      "type": "Microsoft.DBforMariaDB/servers/virtualNetworkRules",
+                      "apiVersion": "2018-06-01",
+                      "name": "[format('{0}/{1}', parameters('serverName'), 'appse')]",
+                      "properties": {
+                        "ignoreMissingVnetServiceEndpoint": false,
+                        "virtualNetworkSubnetId": "[parameters('appSnetId')]"
+                      },
+                      "dependsOn": [
+                        "[resourceId('Microsoft.DBforMariaDB/servers', parameters('serverName'))]"
+                      ]
+                    },
+                    {
+                      "condition": "[not(parameters('useFlexibleServer'))]",
+                      "type": "Microsoft.DBforMariaDB/servers/databases",
+                      "apiVersion": "2018-06-01",
+                      "name": "[format('{0}/{1}', parameters('serverName'), 'wordpress')]",
+                      "properties": {
+                        "charset": "utf8",
+                        "collation": "utf8_general_ci"
+                      },
+                      "dependsOn": [
+                        "[resourceId('Microsoft.DBforMariaDB/servers', parameters('serverName'))]"
+                      ]
                     },
                     {
                       "condition": "[parameters('useFlexibleServer')]",
@@ -2275,7 +2332,10 @@
                     }
                   }
                 }
-              }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Resources/deployments', 'vnet-deployment')]"
+              ]
             },
             {
               "type": "Microsoft.Resources/deployments",

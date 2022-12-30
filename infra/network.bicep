@@ -24,6 +24,9 @@ module vnet 'modules/vnet.module.bicep' = {
         {
           service: 'Microsoft.Storage'
         }
+        {
+          service: 'Microsoft.Sql'
+        }
       ]
     }
     infraSnet: {
@@ -31,6 +34,9 @@ module vnet 'modules/vnet.module.bicep' = {
       serviceEndpoints: [
         {
           service: 'Microsoft.Storage'
+        }
+        {
+          service: 'Microsoft.Sql'
         }
       ]
     }

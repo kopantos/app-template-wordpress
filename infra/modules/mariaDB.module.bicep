@@ -2,6 +2,8 @@ param serverName string
 param location string
 param tags object = {}
 param administratorLogin string = 'dbadmin'
+param infraSnetId string
+param appSnetId string
 @secure()
 param dbPassword string
 param useFlexibleServer bool = false
@@ -19,7 +21,7 @@ resource mySQL 'Microsoft.DBforMariaDB/servers@2018-06-01' = if (!useFlexibleSer
   }
   properties: {
     minimalTlsVersion: 'TLSEnforcementDisabled'
-    publicNetworkAccess: 'Disabled'
+    publicNetworkAccess: 'Enabled'
     sslEnforcement: 'Disabled'
     storageProfile: {
       backupRetentionDays: 7
@@ -31,6 +33,32 @@ resource mySQL 'Microsoft.DBforMariaDB/servers@2018-06-01' = if (!useFlexibleSer
     createMode: 'Default'
     administratorLogin: administratorLogin
     administratorLoginPassword: dbPassword
+  }
+}
+
+resource infraSnetFirewallRules 'Microsoft.DBforMariaDB/servers/virtualNetworkRules@2018-06-01' = if (!useFlexibleServer) {
+  name: 'infrase'
+  parent: mySQL
+  properties: {
+    ignoreMissingVnetServiceEndpoint: false
+    virtualNetworkSubnetId: infraSnetId
+  }
+}
+resource appSnetFirewallRules 'Microsoft.DBforMariaDB/servers/virtualNetworkRules@2018-06-01' = if (!useFlexibleServer) {
+  name: 'appse'
+  parent: mySQL
+  properties: {
+    ignoreMissingVnetServiceEndpoint: false
+    virtualNetworkSubnetId: appSnetId
+  }
+}
+
+resource wordpressdb 'Microsoft.DBforMariaDB/servers/databases@2018-06-01' = if (!useFlexibleServer) {
+  name: 'wordpress'
+  parent: mySQL
+  properties: {
+    charset: 'utf8'
+    collation: 'utf8_general_ci'
   }
 }
 
