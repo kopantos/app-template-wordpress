@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.13.1.58284",
-      "templateHash": "8605602938812309454"
+      "templateHash": "4334137798746439559"
     }
   },
   "parameters": {
@@ -1220,7 +1220,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.13.1.58284",
-              "templateHash": "4001917202873696429"
+              "templateHash": "17244510736910698334"
             }
           },
           "parameters": {
@@ -2482,6 +2482,9 @@
                   "containerAppName": {
                     "value": "[variables('resourceNames').containerAppName]"
                   },
+                  "wordpressFqdn": {
+                    "value": "[parameters('wordpressFqdn')]"
+                  },
                   "infraSnetId": {
                     "value": "[reference(resourceId('Microsoft.Resources/deployments', 'vnet-deployment'), '2020-10-01').outputs.infraSnetId.value]"
                   },
@@ -2524,7 +2527,7 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.13.1.58284",
-                      "templateHash": "9675721735134651803"
+                      "templateHash": "5377070528220624416"
                     }
                   },
                   "parameters": {
@@ -2536,6 +2539,9 @@
                       "defaultValue": {}
                     },
                     "containerAppName": {
+                      "type": "string"
+                    },
+                    "wordpressFqdn": {
                       "type": "string"
                     },
                     "infraSnetId": {
@@ -2565,7 +2571,8 @@
                   },
                   "variables": {
                     "dbPort": "3306",
-                    "volumename": "wpstorage"
+                    "volumename": "wpstorage",
+                    "dbName": "wordpress"
                   },
                   "resources": [
                     {
@@ -2598,11 +2605,19 @@
                             },
                             {
                               "name": "db-name",
-                              "value": "mastodon-prod"
+                              "value": "[variables('dbName')]"
                             },
                             {
                               "name": "db-pass",
                               "value": "[parameters('dbPassword')]"
+                            },
+                            {
+                              "name": "wp-siteurl",
+                              "value": "[format('https://{0}', parameters('wordpressFqdn'))]"
+                            },
+                            {
+                              "name": "wp-home",
+                              "value": "[format('https://{0}', parameters('wordpressFqdn'))]"
                             }
                           ]
                         },
@@ -2632,6 +2647,14 @@
                                 {
                                   "name": "DB_PORT",
                                   "secretRef": "db-port"
+                                },
+                                {
+                                  "name": "WP_SITEURL",
+                                  "secretRef": "wp-siteurl"
+                                },
+                                {
+                                  "name": "WP_HOME",
+                                  "secretRef": "wp-home"
                                 }
                               ],
                               "image": "wordpress:latest",
@@ -3075,7 +3098,7 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.13.1.58284",
-                      "templateHash": "18323905458500238241"
+                      "templateHash": "3233870725150234165"
                     }
                   },
                   "parameters": {
@@ -3250,7 +3273,7 @@
                               "protocol": "Http",
                               "cookieBasedAffinity": "Enabled",
                               "affinityCookieName": "",
-                              "pickHostNameFromBackendAddress": false,
+                              "pickHostNameFromBackendAddress": true,
                               "requestTimeout": 120,
                               "probe": {
                                 "id": "[resourceId('Microsoft.Network/applicationGateways/probes', parameters('name'), 'webProbe')]"

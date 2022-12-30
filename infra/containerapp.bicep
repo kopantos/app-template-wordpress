@@ -65,12 +65,12 @@ resource wordpressApp 'Microsoft.App/containerApps@2022-06-01-preview' = {
           value: dbPassword
         }
         {
-          name: 'db-siteurl'
-          value: wordpressFqdn
+          name: 'wp-siteurl'
+          value: 'https://${wordpressFqdn}'
         }
         {
-          name: 'db-home'
-          value: wordpressFqdn
+          name: 'wp-home'
+          value: 'https://${wordpressFqdn}'
         }
       ]
     }
@@ -103,11 +103,11 @@ resource wordpressApp 'Microsoft.App/containerApps@2022-06-01-preview' = {
             }
             {
               name: 'WP_SITEURL'
-              secretRef: 'db-siteurl'
+              secretRef: 'wp-siteurl'
             }
             {
               name: 'WP_HOME'
-              secretRef: 'db-home'
+              secretRef: 'wp-home'
             }
           ]
           image: 'wordpress:latest'
