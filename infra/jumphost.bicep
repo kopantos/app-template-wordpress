@@ -7,9 +7,9 @@ param adminUsername string = 'hostadmin'
 param adminPassword string = ''
 
 var resourceNames = {
-  nicName: naming.storageAccount.nameUnique
-  ipConfigurationName: naming.storageAccount.nameUnique
-  vmName: naming.storageAccount.nameUnique
+  nicName: 'jumphost-nic'
+  ipConfigurationName: 'jumphost-nic-ipconfig'
+  vmName: 'jumphost'
 }
 
 resource jumphostnic 'Microsoft.Network/networkInterfaces@2022-07-01' = {

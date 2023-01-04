@@ -86,7 +86,9 @@ param fqdn string
 param applicationName string
 @secure()
 param mariaDBPassword string
-param environment string = 'dev'
+@description('Id of the user or app to assign application roles')
+param principalId string = ''
+param environmentName string = 'dev'
 @description('Whether to use a custom SSL certificate or not. If set to true, the certificate must be provided in the path cert/certificate.pfx.')
 param useCertificate bool = false
 @description('Whether to deploy the jump host or not')
@@ -100,11 +102,11 @@ param tags object = {}
 
 var defaultTags = union({
   applicationName: applicationName
-  environment: environment
+  environment: environmentName
 }, tags)
 
 resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
-  name: 'rg-${applicationName}-${environment}'
+  name: 'rg-${applicationName}-${environmentName}'
   location: location
   tags: defaultTags
 }
@@ -115,7 +117,7 @@ module naming 'modules/naming.module.bicep' = {
   params: {
     suffix: [
       applicationName
-      environment
+      environmentName
     ]
     uniqueLength: 6
     uniqueSeed: rg.id
