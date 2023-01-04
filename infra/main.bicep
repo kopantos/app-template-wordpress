@@ -87,6 +87,15 @@ param applicationName string
 @secure()
 param mariaDBPassword string
 param environment string = 'dev'
+@description('Whether to use a custom SSL certificate or not. If set to true, the certificate must be provided in the path cert/certificate.pfx.')
+param useCertificate bool = false
+@description('Whether to deploy the jump host or not')
+param deployJumpHost bool = false
+@description('The username of the jump host admin user')
+param adminUsername string = 'hostadmin'
+@secure()
+@description('The password of the jump host admin user')
+param adminPassword string = ''
 param tags object = {}
 
 var defaultTags = union({
@@ -123,6 +132,10 @@ module main 'resources.bicep' = {
     applicationName: applicationName
     mariaDBPassword: mariaDBPassword
     wordpressFqdn: fqdn
+    useCertificate: useCertificate
+    deployJumpHost: deployJumpHost
+    adminUsername: adminUsername
+    adminPassword: adminPassword
   }
 }
 

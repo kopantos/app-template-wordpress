@@ -14,7 +14,7 @@ var resourceNames = {
   publicIP: 'pip-${name}'
   webBackendAddressPool: 'web-beap-capp-${name}'
   streamingBackendAddressPool: 'streaming-beap-capp-${name}'
-  frontendPort443: 'feport-${name}-443'
+  frontendPort: 'feport-${name}'
   frontendIpConfiguration: 'feip-${name}'
   backendHttpSettingFor80: 'be-htst-${name}-80'
   httpListener: 'httplstn-${name}'
@@ -29,7 +29,7 @@ resource vault 'Microsoft.KeyVault/vaults@2022-07-01' existing = {
   name: keyVaultName
 }
 
-resource keyVaultCertificate 'Microsoft.KeyVault/vaults/secrets@2022-07-01' existing = {
+resource keyVaultCertificate 'Microsoft.KeyVault/vaults/secrets@2022-07-01' existing  = if (!empty(certificateKeyName)) {
   name: certificateKeyName
   parent: vault
 }
@@ -95,14 +95,14 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2022-05-01' =
       minCapacity: 1
       maxCapacity: 4
     }
-    sslCertificates: [
+    sslCertificates: (!empty(certificateKeyName)) ? [
       {
         name: appGatewayFQDN
         properties: {
           keyVaultSecretId:  keyVaultCertificate.properties.secretUriWithVersion
         }
       }
-    ]
+    ] : []
     gatewayIPConfigurations: [
       {
         name: '${name}-ip-configuration'
@@ -123,11 +123,18 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2022-05-01' =
         }
       }
     ]
-    frontendPorts: [
+    frontendPorts: (!empty(certificateKeyName))? [
       {
-        name: resourceNames.frontendPort443
+        name: resourceNames.frontendPort
         properties: {
           port: 443
+        }
+      }
+    ] : [
+      {
+        name: resourceNames.frontendPort
+        properties: {
+          port: 80
         }
       }
     ]
@@ -137,7 +144,6 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2022-05-01' =
         properties: {
           backendAddresses: [
             {
-              //ipAddress: backendPool
               fqdn: backendFqdn
             }
           ]
@@ -152,7 +158,8 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2022-05-01' =
           protocol: 'Http'
           cookieBasedAffinity: 'Enabled'
           affinityCookieName: ''
-          pickHostNameFromBackendAddress: true
+          pickHostNameFromBackendAddress: false
+          hostName: backendFqdn
           requestTimeout: 120
           probe:{
             id: resourceId('Microsoft.Network/applicationGateways/probes', name, 'webProbe')
@@ -160,7 +167,7 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2022-05-01' =
         }
       }
     ]
-    httpListeners: [
+    httpListeners: (!empty(certificateKeyName))?[
       {
         name: resourceNames.httpListener
         properties: {
@@ -168,12 +175,25 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2022-05-01' =
             id: resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', name, resourceNames.frontendIpConfiguration)
           }
           frontendPort: {
-            id: resourceId('Microsoft.Network/applicationGateways/frontendPorts', name, resourceNames.frontendPort443)
+            id: resourceId('Microsoft.Network/applicationGateways/frontendPorts', name, resourceNames.frontendPort)
           }
           protocol: 'Https'
           sslCertificate: {
             id: resourceId('Microsoft.Network/applicationGateways/sslCertificates', name, appGatewayFQDN)
           }
+        }
+      }
+    ]:[
+      {
+        name: resourceNames.httpListener
+        properties: {
+          frontendIPConfiguration: {
+            id: resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', name, resourceNames.frontendIpConfiguration)
+          }
+          frontendPort: {
+            id: resourceId('Microsoft.Network/applicationGateways/frontendPorts', name, resourceNames.frontendPort)
+          }
+          protocol: 'Http'
         }
       }
     ]
