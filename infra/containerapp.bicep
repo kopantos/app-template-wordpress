@@ -66,11 +66,11 @@ resource wordpressApp 'Microsoft.App/containerApps@2022-06-01-preview' = {
         }
         {
           name: 'wp-siteurl'
-          value: 'https://${wordpressFqdn}'
+          value: 'http://${wordpressFqdn}'
         }
         {
           name: 'wp-home'
-          value: 'https://${wordpressFqdn}'
+          value: 'http://${wordpressFqdn}'
         }
       ]
     }
