@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.13.1.58284",
-      "templateHash": "17940381597422138902"
+      "templateHash": "14665363910122675432"
     }
   },
   "parameters": {
@@ -106,6 +106,34 @@
     "environment": {
       "type": "string",
       "defaultValue": "dev"
+    },
+    "useCertificate": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Whether to use a custom SSL certificate or not. If set to true, the certificate must be provided in the path cert/certificate.pfx."
+      }
+    },
+    "deployJumpHost": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Whether to deploy the jump host or not"
+      }
+    },
+    "adminUsername": {
+      "type": "string",
+      "defaultValue": "hostadmin",
+      "metadata": {
+        "description": "The username of the jump host admin user"
+      }
+    },
+    "adminPassword": {
+      "type": "secureString",
+      "defaultValue": "",
+      "metadata": {
+        "description": "The password of the jump host admin user"
+      }
     },
     "tags": {
       "type": "object",
@@ -1211,6 +1239,18 @@
           },
           "wordpressFqdn": {
             "value": "[parameters('fqdn')]"
+          },
+          "useCertificate": {
+            "value": "[parameters('useCertificate')]"
+          },
+          "deployJumpHost": {
+            "value": "[parameters('deployJumpHost')]"
+          },
+          "adminUsername": {
+            "value": "[parameters('adminUsername')]"
+          },
+          "adminPassword": {
+            "value": "[parameters('adminPassword')]"
           }
         },
         "template": {
@@ -1220,7 +1260,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.13.1.58284",
-              "templateHash": "15364006623000582613"
+              "templateHash": "9757454742461110512"
             }
           },
           "parameters": {
@@ -1258,11 +1298,33 @@
             },
             "mariaDBPassword": {
               "type": "secureString"
+            },
+            "useCertificate": {
+              "type": "bool",
+              "defaultValue": false,
+              "metadata": {
+                "description": "Whether to use a custom SSL certificate or not. If set to true, the certificate must be provided in the path cert/certificate.pfx."
+              }
+            },
+            "deployJumpHost": {
+              "type": "bool",
+              "defaultValue": false,
+              "metadata": {
+                "description": "Whether to deploy the jump host or not"
+              }
+            },
+            "adminUsername": {
+              "type": "string",
+              "defaultValue": "hostadmin"
+            },
+            "adminPassword": {
+              "type": "secureString",
+              "defaultValue": ""
             }
           },
           "variables": {
-            "$fxv#0": "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",
-            "sslCertPath": "cert/selfSignedCert.pfx",
+            "$fxv#0": "W0NSRUFURSBZT1VSIENFUlRJRklDQVRFXQ==",
+            "sslCertPath": "cert/certificate.pfx",
             "resourceNames": {
               "storageAccount": "[parameters('naming').storageAccount.nameUnique]",
               "keyVault": "[parameters('naming').keyVault.name]",
@@ -1283,6 +1345,7 @@
           },
           "resources": [
             {
+              "condition": "[parameters('useCertificate')]",
               "type": "Microsoft.KeyVault/vaults/secrets",
               "apiVersion": "2022-07-01",
               "name": "[format('{0}/{1}', variables('resourceNames').keyVault, variables('secretNames').certificateKeyName)]",
@@ -2587,7 +2650,7 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.13.1.58284",
-                      "templateHash": "5377070528220624416"
+                      "templateHash": "2045624079841801369"
                     }
                   },
                   "parameters": {
@@ -2673,11 +2736,11 @@
                             },
                             {
                               "name": "wp-siteurl",
-                              "value": "[format('https://{0}', parameters('wordpressFqdn'))]"
+                              "value": "[format('http://{0}', parameters('wordpressFqdn'))]"
                             },
                             {
                               "name": "wp-home",
-                              "value": "[format('https://{0}', parameters('wordpressFqdn'))]"
+                              "value": "[format('http://{0}', parameters('wordpressFqdn'))]"
                             }
                           ]
                         },
@@ -3141,9 +3204,7 @@
                   "keyVaultName": {
                     "value": "[variables('resourceNames').keyVault]"
                   },
-                  "certificateKeyName": {
-                    "value": "[variables('secretNames').certificateKeyName]"
-                  },
+                  "certificateKeyName": "[if(parameters('useCertificate'), createObject('value', variables('secretNames').certificateKeyName), createObject('value', ''))]",
                   "logAnalyticsWorkspaceId": {
                     "value": "[reference(resourceId('Microsoft.Resources/deployments', 'loganalytics-deployment'), '2020-10-01').outputs.workspaceId.value]"
                   },
@@ -3158,7 +3219,7 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.13.1.58284",
-                      "templateHash": "3233870725150234165"
+                      "templateHash": "9618275193590126015"
                     }
                   },
                   "parameters": {
@@ -3200,7 +3261,7 @@
                       "publicIP": "[format('pip-{0}', parameters('name'))]",
                       "webBackendAddressPool": "[format('web-beap-capp-{0}', parameters('name'))]",
                       "streamingBackendAddressPool": "[format('streaming-beap-capp-{0}', parameters('name'))]",
-                      "frontendPort443": "[format('feport-{0}-443', parameters('name'))]",
+                      "frontendPort": "[format('feport-{0}', parameters('name'))]",
                       "frontendIpConfiguration": "[format('feip-{0}', parameters('name'))]",
                       "backendHttpSettingFor80": "[format('be-htst-{0}-80', parameters('name'))]",
                       "httpListener": "[format('httplstn-{0}', parameters('name'))]",
@@ -3277,14 +3338,7 @@
                           "minCapacity": 1,
                           "maxCapacity": 4
                         },
-                        "sslCertificates": [
-                          {
-                            "name": "[parameters('appGatewayFQDN')]",
-                            "properties": {
-                              "keyVaultSecretId": "[reference(resourceId('Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), parameters('certificateKeyName')), '2022-07-01').secretUriWithVersion]"
-                            }
-                          }
-                        ],
+                        "sslCertificates": "[if(not(empty(parameters('certificateKeyName'))), createArray(createObject('name', parameters('appGatewayFQDN'), 'properties', createObject('keyVaultSecretId', reference(resourceId('Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), parameters('certificateKeyName')), '2022-07-01').secretUriWithVersion))), createArray())]",
                         "gatewayIPConfigurations": [
                           {
                             "name": "[format('{0}-ip-configuration', parameters('name'))]",
@@ -3305,14 +3359,7 @@
                             }
                           }
                         ],
-                        "frontendPorts": [
-                          {
-                            "name": "[variables('resourceNames').frontendPort443]",
-                            "properties": {
-                              "port": 443
-                            }
-                          }
-                        ],
+                        "frontendPorts": "[if(not(empty(parameters('certificateKeyName'))), createArray(createObject('name', variables('resourceNames').frontendPort, 'properties', createObject('port', 443))), createArray(createObject('name', variables('resourceNames').frontendPort, 'properties', createObject('port', 80))))]",
                         "backendAddressPools": [
                           {
                             "name": "[variables('resourceNames').webBackendAddressPool]",
@@ -3333,7 +3380,8 @@
                               "protocol": "Http",
                               "cookieBasedAffinity": "Enabled",
                               "affinityCookieName": "",
-                              "pickHostNameFromBackendAddress": true,
+                              "pickHostNameFromBackendAddress": false,
+                              "hostName": "[parameters('backendFqdn')]",
                               "requestTimeout": 120,
                               "probe": {
                                 "id": "[resourceId('Microsoft.Network/applicationGateways/probes', parameters('name'), 'webProbe')]"
@@ -3341,23 +3389,7 @@
                             }
                           }
                         ],
-                        "httpListeners": [
-                          {
-                            "name": "[variables('resourceNames').httpListener]",
-                            "properties": {
-                              "frontendIPConfiguration": {
-                                "id": "[resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', parameters('name'), variables('resourceNames').frontendIpConfiguration)]"
-                              },
-                              "frontendPort": {
-                                "id": "[resourceId('Microsoft.Network/applicationGateways/frontendPorts', parameters('name'), variables('resourceNames').frontendPort443)]"
-                              },
-                              "protocol": "Https",
-                              "sslCertificate": {
-                                "id": "[resourceId('Microsoft.Network/applicationGateways/sslCertificates', parameters('name'), parameters('appGatewayFQDN'))]"
-                              }
-                            }
-                          }
-                        ],
+                        "httpListeners": "[if(not(empty(parameters('certificateKeyName'))), createArray(createObject('name', variables('resourceNames').httpListener, 'properties', createObject('frontendIPConfiguration', createObject('id', resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', parameters('name'), variables('resourceNames').frontendIpConfiguration)), 'frontendPort', createObject('id', resourceId('Microsoft.Network/applicationGateways/frontendPorts', parameters('name'), variables('resourceNames').frontendPort)), 'protocol', 'Https', 'sslCertificate', createObject('id', resourceId('Microsoft.Network/applicationGateways/sslCertificates', parameters('name'), parameters('appGatewayFQDN')))))), createArray(createObject('name', variables('resourceNames').httpListener, 'properties', createObject('frontendIPConfiguration', createObject('id', resourceId('Microsoft.Network/applicationGateways/frontendIPConfigurations', parameters('name'), variables('resourceNames').frontendIpConfiguration)), 'frontendPort', createObject('id', resourceId('Microsoft.Network/applicationGateways/frontendPorts', parameters('name'), variables('resourceNames').frontendPort)), 'protocol', 'Http'))))]",
                         "requestRoutingRules": [
                           {
                             "name": "[variables('resourceNames').requestRoutingRule]",
@@ -3474,6 +3506,164 @@
                 "[resourceId('Microsoft.Resources/deployments', 'loganalytics-deployment')]",
                 "[resourceId('Microsoft.Resources/deployments', 'vnet-deployment')]",
                 "[resourceId('Microsoft.Resources/deployments', 'wordpressapp-deployment')]"
+              ]
+            },
+            {
+              "condition": "[parameters('deployJumpHost')]",
+              "type": "Microsoft.Resources/deployments",
+              "apiVersion": "2020-10-01",
+              "name": "jumphost-deployment",
+              "properties": {
+                "expressionEvaluationOptions": {
+                  "scope": "inner"
+                },
+                "mode": "Incremental",
+                "parameters": {
+                  "naming": {
+                    "value": "[parameters('naming')]"
+                  },
+                  "subnetId": {
+                    "value": "[reference(resourceId('Microsoft.Resources/deployments', 'vnet-deployment'), '2020-10-01').outputs.appSnetId.value]"
+                  },
+                  "location": {
+                    "value": "[parameters('location')]"
+                  },
+                  "tags": {
+                    "value": "[parameters('tags')]"
+                  },
+                  "adminUsername": {
+                    "value": "[parameters('adminUsername')]"
+                  },
+                  "adminPassword": {
+                    "value": "[parameters('adminPassword')]"
+                  }
+                },
+                "template": {
+                  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                  "contentVersion": "1.0.0.0",
+                  "metadata": {
+                    "_generator": {
+                      "name": "bicep",
+                      "version": "0.13.1.58284",
+                      "templateHash": "13060439847380540126"
+                    }
+                  },
+                  "parameters": {
+                    "naming": {
+                      "type": "object"
+                    },
+                    "location": {
+                      "type": "string",
+                      "defaultValue": "[resourceGroup().location]"
+                    },
+                    "tags": {
+                      "type": "object",
+                      "defaultValue": {}
+                    },
+                    "subnetId": {
+                      "type": "string"
+                    },
+                    "adminUsername": {
+                      "type": "string",
+                      "defaultValue": "hostadmin"
+                    },
+                    "adminPassword": {
+                      "type": "secureString",
+                      "defaultValue": ""
+                    }
+                  },
+                  "variables": {
+                    "resourceNames": {
+                      "nicName": "[parameters('naming').storageAccount.nameUnique]",
+                      "ipConfigurationName": "[parameters('naming').storageAccount.nameUnique]",
+                      "vmName": "[parameters('naming').storageAccount.nameUnique]"
+                    }
+                  },
+                  "resources": [
+                    {
+                      "type": "Microsoft.Network/networkInterfaces",
+                      "apiVersion": "2022-07-01",
+                      "name": "[variables('resourceNames').nicName]",
+                      "location": "[parameters('location')]",
+                      "properties": {
+                        "ipConfigurations": [
+                          {
+                            "name": "[variables('resourceNames').ipConfigurationName]",
+                            "properties": {
+                              "subnet": {
+                                "id": "[parameters('subnetId')]"
+                              },
+                              "privateIPAllocationMethod": "Dynamic"
+                            }
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "type": "Microsoft.Compute/virtualMachines",
+                      "apiVersion": "2022-08-01",
+                      "name": "[variables('resourceNames').vmName]",
+                      "location": "[parameters('location')]",
+                      "tags": "[parameters('tags')]",
+                      "properties": {
+                        "hardwareProfile": {
+                          "vmSize": "Standard_F4s_v2"
+                        },
+                        "storageProfile": {
+                          "imageReference": {
+                            "publisher": "MicrosoftWindowsDesktop",
+                            "offer": "Windows-10",
+                            "sku": "win10-21h2-pro",
+                            "version": "latest"
+                          },
+                          "osDisk": {
+                            "osType": "Windows",
+                            "createOption": "FromImage",
+                            "managedDisk": {
+                              "storageAccountType": "Standard_LRS"
+                            }
+                          }
+                        },
+                        "osProfile": {
+                          "computerName": "[variables('resourceNames').vmName]",
+                          "adminUsername": "[parameters('adminUsername')]",
+                          "adminPassword": "[parameters('adminPassword')]",
+                          "windowsConfiguration": {
+                            "provisionVMAgent": true,
+                            "enableAutomaticUpdates": true,
+                            "patchSettings": {
+                              "patchMode": "AutomaticByOS",
+                              "assessmentMode": "ImageDefault",
+                              "enableHotpatching": false
+                            },
+                            "enableVMAgentPlatformUpdates": true
+                          }
+                        },
+                        "networkProfile": {
+                          "networkInterfaces": [
+                            {
+                              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('resourceNames').nicName)]",
+                              "properties": {
+                                "deleteOption": "Delete"
+                              }
+                            }
+                          ]
+                        },
+                        "diagnosticsProfile": {
+                          "bootDiagnostics": {
+                            "enabled": true
+                          }
+                        }
+                      },
+                      "dependsOn": [
+                        "[resourceId('Microsoft.Network/networkInterfaces', variables('resourceNames').nicName)]"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Resources/deployments', 'vnet-deployment')]"
               ]
             }
           ]
