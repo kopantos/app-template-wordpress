@@ -138,6 +138,7 @@ module main 'resources.bicep' = {
     deployJumpHost: deployJumpHost
     adminUsername: adminUsername
     adminPassword: adminPassword
+    principalId: principalId
   }
 }
 

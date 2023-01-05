@@ -69,6 +69,9 @@ You can deploy this app template either using the Azure Developer CLI (azd) or t
     AZURE_SUBSCRIPTION_ID="<YOUR AZURE SUBSCRIPTION ID>"
     resourceGroupName="<THE RESOURCE GROUP NAME>"
     ```
+
+    > **Note:** The ```AZURE_PRINCIPAL_ID``` is the service principal id that will be used for the deployment. Since in this deployment method your user account is used you can leave this blank.
+
 1. Run ```azd privision``` to deploy the app template
 
 ### Using Github Actions
@@ -89,7 +92,7 @@ You can deploy this app template either using the Azure Developer CLI (azd) or t
         az ad sp create-for-rbac --name {app-name} --role contributor --scopes /subscriptions/{subscription-id}/resourceGroups/rg-ContosoUniversityDemo --sdk-auth     
         ```
     * The command should output a JSON object similar to this:
-    ```
+        ```json
         {
             "clientId": "<GUID>",
             "clientSecret": "<GUID>",
@@ -101,8 +104,10 @@ You can deploy this app template either using the Azure Developer CLI (azd) or t
             "sqlManagementEndpointUrl": "<URL>",
             "galleryEndpointUrl": "<URL>",
             "managementEndpointUrl": "<URL>"
-        }
-    ```
+        }```
+
+    copy this information as it will be used in the next step.
+
 3. Store the output JSON as the value of a GitHub Actions secret named 'AZURE_CREDENTIALS'
     + Under your repository name, click Settings. 
     + In the "Security" section of the sidebar, select Secrets. 
@@ -115,7 +120,9 @@ You can deploy this app template either using the Azure Developer CLI (azd) or t
     You will need to provide the following values as repository secrets to be used by the GitHub Actions workflow.
     ![Secrets](assets/github-secrets.png)
 
-4. Execute the azure-dev.yml action workflow
+> **Note:** The ```AZURE_PRINCIPAL_ID``` is the clientId field of the service principal that was created in the previous step.
+
+5. Execute the azure-dev.yml action workflow
 
     + Under your repository name, click Actions .
     + In the left sidebar, click the workflow "azure-dev.yml".
