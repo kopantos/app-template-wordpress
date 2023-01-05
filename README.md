@@ -1,4 +1,7 @@
-# wordpress appplication template
+# WordPress appplication template
+
+[![.github/workflows/azure-dev.yml](https://github.com/kopantos/app-template-wordpress/actions/workflows/azure-dev.yml/badge.svg)](https://github.com/kopantos/app-template-wordpress/actions/workflows/azure-dev.yml)
+
 App Templates are packaged app samples designed to reduce the time it takes a developer to deploy their code to Azure. Unlike standalone example code, the goal of App Templates is to provide all the components to deploy an app to Azure with automation via GitHub Actions or other CI/CD services. 
 
 This specific sample consists of example code, CI/CD components, and documentation containing all the required steps to deploy **a fully functional worspress site** and is designed to be compatible with the [Azure Developer CLI(azd)](https://github.com/Azure/azure-dev/) which is currently in preview.
