@@ -133,10 +133,13 @@ After deployment, below resources will be created
 When you are done, you can delete all the Azure resources created with this template by running the following command:
 
 ```
-resourceGroup=rg-ContosoUniversityDemo
+resourceGroup=<RESOURCE GROUP NAME>
 az group delete --name $resourceGroup
 ```
-
+or if you deployed using the azd cli
+```
+azd down
+```
 ## Contributing
 
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a
