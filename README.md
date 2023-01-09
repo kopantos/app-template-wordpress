@@ -165,14 +165,14 @@ Once you have mapped the FQDN to the public IP address, you can navigate to the 
         ```bash
         resourceGroup=<RESOURCE GROUP NAME>
         mariaDBServer=<MARIADB SERVER NAME> #<name>-prod.mariadb.database.azure.com
-        clientIP=<YOUR IP>
+        clientIP=$(curl -s checkip.dyndns.org | sed -e 's/.*Current IP Address: //' -e 's/<.*$//')
         az mysql server firewall-rule create --resource-group $resourceGroup --server $mariaDBServer --name allow-client --start-ip-address $clientIP --end-ip-address $clientIP
         ```
     * Connect to the database using the following command
 
         ```bash
-        username=<DB ADMIN USERNAME>    #db_admin@<name>-prod.mariadb.database.azure.com
-        mysql -u $username -p -h $mariaDBServer
+        username=<DB ADMIN USERNAME>    #db_admin@<name>
+        mysql -u $username -p -h <MARIADB SERVER NAME>-prod.mariadb.database.azure.com wordpress
         ```
     * Once connected, run the following commands to update the siteurl and home configuration entries
 
@@ -193,21 +193,21 @@ To do this navigate to the Azure Portal and open a Bash cloud shell session. Mak
 
     ```bash
     resourceGroup=<RESOURCE GROUP NAME>
-    mariaDBServer=<MARIADB SERVER NAME> #<name>-prod.mariadb.database.azure.com
-    clientIP=<YOUR IP>
-    az mysql server firewall-rule create --resource-group $resourceGroup --server $mariaDBServer --name allow-client --start-ip-address $clientIP --end-ip-address $clientIP
+    mariaDBServer=<MARIADB SERVER NAME> #<name> with out the domain name
+    clientIP=$(curl -s checkip.dyndns.org | sed -e 's/.*Current IP Address: //' -e 's/<.*$//')
+    az mariadb server firewall-rule create --resource-group $resourceGroup --server $mariaDBServer --name allow-client --start-ip-address $clientIP --end-ip-address $clientIP
     ```
 
 1. Connect to the database using the following command
 
     ```bash
-    username=<DB ADMIN USERNAME>    #db_admin@<name>-prod.mariadb.database.azure.com
+    username=<DB ADMIN USERNAME>    #db_admin@<name>
     mysql -u $username -p -h $mariaDBServer
     ```
 1. Once connected, restore your existing wordpress database
 
     ```sql
-    mysql -u $username -p -h $mariaDBServer wordpress < <PATH TO YOUR BACKUP FILE>
+    mysql -u $username -p -h <MARIADB SERVER NAME>-prod.mariadb.database.azure.com wordpress < <PATH TO YOUR BACKUP FILE>
     ```
 1. Make sure the siteurl and home configuration entries are pointing to the new site
     ```sql
