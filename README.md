@@ -144,7 +144,7 @@ To do this, you will first need to **map the FQDN of the site you specified when
 
 Once you have mapped the FQDN to the public IP address, you can navigate to the site in your browser and complete the initial setup.
 ### New WordPress instance
-1. Navigate to the http://FQDN/wp-admin/wp-setup.php using your browser
+1. Navigate to the http://FQDN/wp-admin/setup-config.php using your browser
 
     > **Note:** Don't worry if the stylesheet is broken, that's because the siteurl and home variables haven't been configured yet.
 
@@ -152,7 +152,7 @@ Once you have mapped the FQDN to the public IP address, you can navigate to the 
 
     ![Setup](assets/wp-installation.png)
 
-1. Fill in the site name, username, password, and email address and click Install WordPress
+1. Fill in the site title, the administrator username, password, and email address and click Install WordPress
 
     ![Setup](assets/wp-setup.png)
 
