@@ -138,15 +138,108 @@ After deployment, below resources will be created
 
 
 ## Getting Started with Wordpress
+Since this is a brand new Wordpress site, you will need to complete the initial setup which creates the Database schema and populates it with seed data as well as creates the ```wp-config.php``` file to read the configuration from the environment variables.
+
+To do this, you will first need to **map the FQDN of the site you specified when provisioning the template to the public IP address of the Azure Application Gateway**. You can do this by either adding an entry to your pubcic dns zone or simply by adding an entry to your hosts file.
+
+Once you have mapped the FQDN to the public IP address, you can navigate to the site in your browser and complete the initial setup.
+### New WordPress instance
+1. Navigate to the http://FQDN/wp-admin/wp-setup.php using your browser
+
+    > **Note:** Don't worry if the stylesheet is broken, that's because the siteurl and home variables haven't been configured yet.
+
+1. Fill in the database name with the value ```wordpress```, db user, db password, and db host and click Run the install
+
+    ![Setup](assets/wp-installation.png)
+
+1. Fill in the site name, username, password, and email address and click Install WordPress
+
+    ![Setup](assets/wp-setup.png)
+
+1. Now that the setup is complete, you will need to change the site name and home configuration entries at the WordPress database. 
+
+    * To do this navigate to the Azure Portal and open a Bash cloud shell session
+    * Make sure you are loged in to the correct subscription using tha ```az account show``` command
+    * Create a firewall rule to connect to the database
+
+        ```bash
+        resourceGroup=<RESOURCE GROUP NAME>
+        mariaDBServer=<MARIADB SERVER NAME> #<name>-prod.mariadb.database.azure.com
+        clientIP=<YOUR IP>
+        az mysql server firewall-rule create --resource-group $resourceGroup --server $mariaDBServer --name allow-client --start-ip-address $clientIP --end-ip-address $clientIP
+        ```
+    * Connect to the database using the following command
+
+        ```bash
+        username=<DB ADMIN USERNAME>    #db_admin@<name>-prod.mariadb.database.azure.com
+        mysql -u $username -p -h $mariaDBServer
+        ```
+    * Once connected, run the following commands to update the siteurl and home configuration entries
+
+        ```sql
+        use wordpress;
+        update wp_options set option_value = 'http://FQDN' where option_name = 'siteurl';
+        update wp_options set option_value = 'http://FQDN' where option_name = 'home';
+        ```
+
+1. Now you can navigate to the site in your browser and login using the username and password you specified during the setup.
+
+### Migrate an existing WordPress instance
+To migrate an existing WordPress instance, you will need to perform two tasks. First export the database from the existing site and import it into the new site and then copy the site files to the new site.
+
+To do this navigate to the Azure Portal and open a Bash cloud shell session. Make sure you are loged in to the correct subscription using tha ```az account show``` command
+
+1. Create a firewall rule to connect to the database
+
+    ```bash
+    resourceGroup=<RESOURCE GROUP NAME>
+    mariaDBServer=<MARIADB SERVER NAME> #<name>-prod.mariadb.database.azure.com
+    clientIP=<YOUR IP>
+    az mysql server firewall-rule create --resource-group $resourceGroup --server $mariaDBServer --name allow-client --start-ip-address $clientIP --end-ip-address $clientIP
+    ```
+
+1. Connect to the database using the following command
+
+    ```bash
+    username=<DB ADMIN USERNAME>    #db_admin@<name>-prod.mariadb.database.azure.com
+    mysql -u $username -p -h $mariaDBServer
+    ```
+1. Once connected, restore your existing wordpress database
+
+    ```sql
+    mysql -u $username -p -h $mariaDBServer wordpress < <PATH TO YOUR BACKUP FILE>
+    ```
+1. Make sure the siteurl and home configuration entries are pointing to the new site
+    ```sql
+    use wordpress;
+    update wp_options set option_value = 'http://FQDN' where option_name = 'siteurl';
+    update wp_options set option_value = 'http://FQDN' where option_name = 'home';
+    ```
+1. Create a firewall rule to connect to the Azure storage account
+    ```bash
+    resourceGroup=<RESOURCE GROUP NAME>
+    storageAccount=<STORAGE ACCOUNT NAME>
+    clientIP=<YOUR IP>
+    az storage account firewall-rule create --resource-group $resourceGroup --account-name $storageAccount --name allow-client --start-ip $clientIP --end-ip $clientIP
+
+    azcopy login --tenant-id <TENANT ID>
+    azcopy copy 'myDirectory\*' 'https://$storageAccount.file.core.windows.net/fileshare' --recursive
+    ```
+
+1. Map the FQDN of your site to the public IP address of the Azure Application Gateway. You can do this by adding an entry to your hosts file so that only you can access the new WordPress instance.
+
+> **Note:** This is a basic migration guide. As WordPress sites often contain various customizations you might need to refer to the [WordPress documentation](https://wordpress.org/support/article/moving-wordpress/) for more information on migrating WordPress sites.
 
 ## Clean up resources
 When you are done, you can delete all the Azure resources created with this template by running the following command:
 
-```
+```bash
 resourceGroup=<RESOURCE GROUP NAME>
 az group delete --name $resourceGroup
 ```
+
 or if you deployed using the azd cli
+
 ```
 azd down
 ```
