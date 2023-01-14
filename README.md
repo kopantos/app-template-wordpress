@@ -75,7 +75,7 @@ You can deploy this app template either using the Azure Developer CLI (azd) or t
 
     > **Note:** The ```AZURE_PRINCIPAL_ID``` is the service principal id that will be used for the deployment. Since in this deployment method your user account is used you can leave this blank.
 
-1. Run ```azd privision``` to deploy the app template
+1. Run ```azd provision``` to deploy the app template
 
 ### Using Github Actions
 1. Fork the repository
