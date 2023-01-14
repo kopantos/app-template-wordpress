@@ -164,9 +164,9 @@ Once you have mapped the FQDN to the public IP address, you can navigate to the 
 
         ```bash
         resourceGroup=<RESOURCE GROUP NAME>
-        mariaDBServer=<MARIADB SERVER NAME> #<name>-prod.mariadb.database.azure.com
+        mariaDBServer=<MARIADB SERVER NAME> #Just the <name> without -prod.mariadb.database.azure.com
         clientIP=$(curl -s checkip.dyndns.org | sed -e 's/.*Current IP Address: //' -e 's/<.*$//')
-        az mysql server firewall-rule create --resource-group $resourceGroup --server $mariaDBServer --name allow-client --start-ip-address $clientIP --end-ip-address $clientIP
+        az mariadb server firewall-rule create --resource-group $resourceGroup --server $mariaDBServer --name allow-client --start-ip-address $clientIP --end-ip-address $clientIP
         ```
     * Connect to the database using the following command
 
