@@ -177,7 +177,10 @@ Once you have mapped the FQDN to the public IP address, you can navigate to the 
     
         > **Note:** If you do not remember the password, you can retrieve it from the Azure Portal by navigating to the resource group and selecting the wordpressweb container app. Then click on the **secrets** at the left hand blade select **db-pass** ecret and clicl at the **Click to show value** button.
 
-    * Database Host *Is the name of the MariaDB server and should be db*
+    * Database Host *Is the name of the MariaDB server and should be of the form **{DATABASE-NAME}-prod.mariadb.database.azure.com***
+        
+        > **Note:** you can retrieve it from the Azure Portal by navigating to the resource group and selecting the MariaDB service. The server name is displayed at the top right corner.
+
     * Table Prefix *Leave this as is*
 
     When done click the submit button.
