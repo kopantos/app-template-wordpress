@@ -89,10 +89,16 @@ You can deploy this app template either using the Azure Developer CLI (azd) or t
     The newly created GitHub repo uses GitHub Actions to deploy Azure resources and application code automatically. Your subscription is accessed using an Azure Service Principal. This is an identity created for use by applications, hosted services, and automated tools to access Azure resources. The following steps show how to [set up GitHub Actions to deploy Azure applications](https://github.com/Azure/actions-workflow-samples/blob/master/assets/create-secrets-for-GitHub-workflows.md)
 
     Create an [Azure Service Principal](https://docs.microsoft.com/en-us/cli/azure/create-an-azure-service-principal-azure-cli) with **contributor** permissions on the subscription. The subscription-level permission is needed because the deployment includes creation of the resource group itself.
+    
+    * login interactively to azure using the following command:
+        ```bash
+        az login --scope https://graph.microsoft.com//.default
+        ```
+
     * Run the following [az cli](https://docs.microsoft.com/en-us/cli/azure/?view=azure-cli-latest) command, either locally on your command line or on the Cloud Shell. 
     Replace {app-name} {subscription-id} with the id of the subscription in GUID format.
         ```bash  
-        az ad sp create-for-rbac --name {app-name} --role contributor --scopes /subscriptions/{subscription-id}/resourceGroups/rg-ContosoUniversityDemo --sdk-auth     
+        az ad sp create-for-rbac --name {app-name} --role owner --scopes /subscriptions/{subscription-id} --sdk-auth     
         ```
     * The command should output a JSON object similar to this:
         ```json
@@ -107,18 +113,31 @@ You can deploy this app template either using the Azure Developer CLI (azd) or t
             "sqlManagementEndpointUrl": "<URL>",
             "galleryEndpointUrl": "<URL>",
             "managementEndpointUrl": "<URL>"
-        }```
+        }
+        ```
 
-    copy this information as it will be used in the next step.
+    store this information as it will be used in the next step.
 
-3. Store the output JSON as the value of a GitHub Actions secret named 'AZURE_CREDENTIALS'
+3. Store the following values as GitHub Actions secrets
     + Under your repository name, click Settings. 
     + In the "Security" section of the sidebar, select Secrets. 
     + At the top of the page, click New repository secret
-    + Provide the secret name as AZURE_CREDENTIALS
-    + Add the output JSON as secret value
+    + Provide the secret name as AZURE_CLIENT_ID
+    + Add the clientId field of the service principal that was created in the previous step as the value.
+    + Repeat the above steps for the following secrets:
+        + AZURE_CLIENT_SECRET
+        + AZURE_TENANT_ID
    
-4. Provide the rest of the secrets
+4. Repeat the above steps for the following secrets:
+    + AZURE_ADMIN_PASSWORD _The password for the jumphost_
+    + AZURE_ADMIN_USERNAME _The username for the jumphost_
+    + AZURE_APPLICATION_NAME _The name of the application_
+    + AZURE_ENV_NAME _The name of the environment e.g. prod_
+    + AZURE_FQDN _The FQDN of the WordPress site e.g. http://mywordpress.com_
+    + AZURE_LOCATION _The Azure DC region e.g. westeurope_
+    + AZURE_MARIADB_PASSWORD _The password for the MariaDB database_
+    + AZURE_SUBSCRIPTION_ID _The subscription id_
+    + AZURE_PRINCIPAL_ID _The service principal id_
     
     You will need to provide the following values as repository secrets to be used by the GitHub Actions workflow.
     ![Secrets](assets/github-secrets.png)
@@ -148,9 +167,20 @@ Once you have mapped the FQDN to the public IP address, you can navigate to the 
 
     > **Note:** Don't worry if the stylesheet is broken, that's because the siteurl and home variables haven't been configured yet.
 
-1. Fill in the database name with the value ```wordpress```, db user, db password, and db host and click Run the install
+1. Fill in the database name with the following values
 
     ![Setup](assets/wp-installation.png)
+
+    + Database *Fill in the value **wordpress***, 
+    + Username *Fill in the MariaDB database user name wit the value **db_admin***, 
+    + Password *Fill in the password you have entered during provisioning for the MariaDB database*
+    
+        > **Note:** If you do not remember the password, you can retrieve it from the Azure Portal by navigating to the resource group and selecting the wordpressweb container app. Then click on the **secrets** at the left hand blade select **db-pass** ecret and clicl at the **Click to show value** button.
+
+    * Database Host *Is the name of the MariaDB server and should be db*
+    * Table Prefix *Leave this as is*
+
+    When done click the submit button.
 
 1. Fill in the site title, the administrator username, password, and email address and click Install WordPress
 

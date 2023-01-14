@@ -356,5 +356,6 @@ MigrationBackup/
 *.csr
 *.key
 
+service.principal
 secrets.txt
 kpantos*
