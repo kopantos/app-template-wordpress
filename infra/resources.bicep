@@ -21,6 +21,8 @@ param adminUsername string = 'hostadmin'
 param adminPassword string = ''
 @description('The principal ID of the service principal that will be deploying the resources. If not specified, the current user will be used.')
 param principalId string = ''
+@description('Whether to deploy a redis cache for the wordpress instance or not.')
+param deployWithRedis bool = false
 
 @description('The path to the base64 encoded SSL certificate file in PFX format to be stored in Key Vault. CN and SAN must match the custom hostname of API Management Service.')
 var sslCertPath = 'cert/certificate.pfx'
@@ -170,6 +172,7 @@ module wordpressapp 'containerapp.bicep' = {
     dbHost: mariaDB.outputs.hostname
     dbUser: mariaDBAdmin
     dbPassword: vault.getSecret(secretNames.mariaDBPassword)
+    deployWithRedis: deployWithRedis
   }
 }
 

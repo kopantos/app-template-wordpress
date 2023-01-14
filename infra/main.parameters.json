@@ -31,6 +31,9 @@
       },
       "adminPassword": {
         "value": "${AZURE_ADMIN_PASSWORD}"
+      },
+      "deployWithRedis":{
+        "value": true
       }
     }
   }

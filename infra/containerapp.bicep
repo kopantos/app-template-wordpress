@@ -12,6 +12,7 @@ param dbHost string
 param dbUser string
 @secure()
 param dbPassword string
+param deployWithRedis bool = false
 
 var dbPort = '3306'
 var volumename = 'wpstorage' //sensitive to casing and length. It has to be all lowercase.
@@ -27,6 +28,45 @@ module environment 'modules/containerappsEnvironment.module.bicep' = {
     storageAccountKey: storageAccountKey
     storageAccountName: storageAccountName
     storageShareName: storageShareName
+  }
+}
+
+resource redis 'Microsoft.App/containerApps@2022-06-01-preview' = if (deployWithRedis) {
+  name: '${containerAppName}redis'
+  location: location
+  tags: tags
+  properties: {
+    configuration: {
+      activeRevisionsMode: 'Single'
+      ingress: {
+        allowInsecure: true
+        external: true
+        targetPort: 6379
+        transport: 'auto'
+      }
+    }
+    environmentId: environment.outputs.containerEnvId
+    template: {
+      containers: [
+        {
+          args: []
+          command: []
+          env: []
+          image: 'redis:latest'
+          name: 'redis'
+          probes: []
+          resources: {
+            cpu: json('0.25')
+            memory: '0.5Gi'
+          }
+          volumeMounts: []
+        }
+      ]
+      scale: {
+        minReplicas: 1
+      }
+      volumes:[]
+    }
   }
 }
 
@@ -140,6 +180,7 @@ resource wordpressApp 'Microsoft.App/containerApps@2022-06-01-preview' = {
 }
 
 output webFqdn string = wordpressApp.properties.latestRevisionFqdn
+output redisFqdn string = redis.properties.latestRevisionFqdn
 output webLatestRevisionName string = wordpressApp.properties.latestRevisionName
 output envSuffix string = environment.outputs.envSuffix
 output loadBalancerIP string = environment.outputs.loadBalancerIP

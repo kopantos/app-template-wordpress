@@ -99,6 +99,8 @@ param adminUsername string = 'hostadmin'
 @description('The password of the jump host admin user')
 param adminPassword string = ''
 param tags object = {}
+@description('Whether to deploy a redis cache for the wordpress instance or not.')
+param deployWithRedis bool = false
 
 var defaultTags = union({
   applicationName: applicationName
@@ -139,6 +141,7 @@ module main 'resources.bicep' = {
     adminUsername: adminUsername
     adminPassword: adminPassword
     principalId: principalId
+    deployWithRedis: deployWithRedis
   }
 }
 
