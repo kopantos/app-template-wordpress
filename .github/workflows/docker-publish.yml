@@ -61,7 +61,7 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
       - name: get version
-        run: VERSION=$(cat version.txt)
+        run: VERSION=$(cat src/version.txt)
 
       # Build and push Docker image with Buildx (don't push on PR)
       # https://github.com/docker/build-push-action
