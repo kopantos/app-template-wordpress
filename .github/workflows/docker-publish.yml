@@ -66,8 +66,10 @@ jobs:
           VERSION=$(cat src/version.txt)
           echo $VERSION
         shell: bash
+        env:
+          image_version: "kpantos/wordpress-alpine-php:${{ steps.version.outputs.text }}"
       
-      - run: echo ${{ steps.version.outputs.text }}
+      - run: echo $image_version
       
       # Build and push Docker image with Buildx (don't push on PR)
       # https://github.com/docker/build-push-action
@@ -77,7 +79,7 @@ jobs:
         with:
           context: ./src
           push: ${{ github.event_name != 'pull_request' }}
-          tags: kpantos/wordpress-alpine-php:latest,kpantos/wordpress-alpine-php:${{ steps.version.outputs.text }}
+          tags: kpantos/wordpress-alpine-php:latest,${{ env.image_version }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
