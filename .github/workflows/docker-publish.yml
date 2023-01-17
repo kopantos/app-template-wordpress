@@ -62,7 +62,9 @@ jobs:
 
       - name: get version
         id: version
-        run: cat src/version.txt
+        run: |
+          VERSION=$(cat src/version.txt)
+          echo $VERSION
         shell: bash
       
       - run: echo ${{ steps.version.outputs.text }}
