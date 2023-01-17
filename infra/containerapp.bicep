@@ -104,14 +104,6 @@ resource wordpressApp 'Microsoft.App/containerApps@2022-06-01-preview' = {
           name: 'db-pass'
           value: dbPassword
         }
-        {
-          name: 'wp-siteurl'
-          value: 'http://${wordpressFqdn}'
-        }
-        {
-          name: 'wp-home'
-          value: 'http://${wordpressFqdn}'
-        }
       ]
     }
     environmentId: environment.outputs.containerEnvId
@@ -141,16 +133,8 @@ resource wordpressApp 'Microsoft.App/containerApps@2022-06-01-preview' = {
               name: 'DB_PORT'
               secretRef: 'db-port'
             }
-            {
-              name: 'WP_SITEURL'
-              secretRef: 'wp-siteurl'
-            }
-            {
-              name: 'WP_HOME'
-              secretRef: 'wp-home'
-            }
           ]
-          image: 'wordpress:latest'
+          image: 'kpantos/wordpress-alpine-php:latest'
           name: 'wordpress'
           probes: []
           resources: {
