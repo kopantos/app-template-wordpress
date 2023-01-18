@@ -93,7 +93,6 @@ define('WP_DEBUG', false);
 
 define('WP_HOME', 'http://'. filter_input($fqdn, 'HTTP_HOST', FILTER_SANITIZE_STRING));
 define('WP_SITEURL', 'http://'. filter_input($fqdn, 'HTTP_HOST', FILTER_SANITIZE_STRING));
-define('WP_CONTENT_URL', '/wp-content');
 define('DOMAIN_CURRENT_SITE', filter_input($fqdn, 'HTTP_HOST', FILTER_SANITIZE_STRING));
 
 
