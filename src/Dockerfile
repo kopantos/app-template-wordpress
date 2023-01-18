@@ -1,7 +1,7 @@
 #
 # Dockerfile for WordPress
 #
-FROM appsvcorg/alpine-php-mysql:0.32
+FROM appsvcorg/alpine-php-mysql:0.1
 
 # ========
 # ENV vars
