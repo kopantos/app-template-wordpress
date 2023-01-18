@@ -27,6 +27,7 @@ $connectstr_dbhost = getenv('DB_HOST');
 $connectstr_dbname = getenv('DB_NAME');
 $connectstr_dbusername = getenv('DB_USER');;
 $connectstr_dbpassword = getenv('DB_PASS');
+$fqdn = getenv('WP_FQDN');
 
 
 define('DB_NAME', $connectstr_dbname);
@@ -90,11 +91,10 @@ define('WP_DEBUG', false);
 
 /* That's all, stop editing! Happy blogging. */
 
-//Relative URLs for swapping across app service deployment slots 
-define('WP_HOME', 'http://'. filter_input(INPUT_SERVER, 'HTTP_HOST', FILTER_SANITIZE_STRING));
-define('WP_SITEURL', 'http://'. filter_input(INPUT_SERVER, 'HTTP_HOST', FILTER_SANITIZE_STRING));
+define('WP_HOME', 'http://'. filter_input($fqdn, 'HTTP_HOST', FILTER_SANITIZE_STRING));
+define('WP_SITEURL', 'http://'. filter_input($fqdn, 'HTTP_HOST', FILTER_SANITIZE_STRING));
 define('WP_CONTENT_URL', '/wp-content');
-define('DOMAIN_CURRENT_SITE', filter_input(INPUT_SERVER, 'HTTP_HOST', FILTER_SANITIZE_STRING));
+define('DOMAIN_CURRENT_SITE', filter_input($fqdn, 'HTTP_HOST', FILTER_SANITIZE_STRING));
 
 
 /** Absolute path to the WordPress directory. */

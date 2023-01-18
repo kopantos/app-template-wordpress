@@ -31,7 +31,8 @@ if [ ! -e "$WORDPRESS_HOME/wp-config.php" ]; then
 	echo "INFO: DATABASE_HOST:" $DB_HOST
 	echo "INFO: WORDPRESS_DATABASE_NAME:" $DB_NAME
 	echo "INFO: WORDPRESS_DATABASE_USERNAME:" $DB_USER
-	echo "INFO: WORDPRESS_DATABASE_PASSWORD:" $DB_PASS	        
+	echo "INFO: WORDPRESS_DATABASE_PASSWORD:" $DB_PASS	      
+	echo "INFO: WORDPRESS_HOST:" $WP_FQDN  
 	echo "INFO: ++++++++++++++++++++++++++++++++++++++++++++++++++:"
 
 	cd $WORDPRESS_HOME 

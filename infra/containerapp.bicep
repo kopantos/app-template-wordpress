@@ -104,6 +104,10 @@ resource wordpressApp 'Microsoft.App/containerApps@2022-06-01-preview' = {
           name: 'db-pass'
           value: dbPassword
         }
+        {
+          name: 'wp-fqdn'
+          value: wordpressFqdn
+        }
       ]
     }
     environmentId: environment.outputs.containerEnvId
@@ -132,6 +136,10 @@ resource wordpressApp 'Microsoft.App/containerApps@2022-06-01-preview' = {
             {
               name: 'DB_PORT'
               secretRef: 'db-port'
+            }
+            {
+              name: 'WP_FQDN'
+              secretRef: 'wp-fqdn'
             }
           ]
           image: 'kpantos/wordpress-alpine-php:latest'
