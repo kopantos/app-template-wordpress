@@ -151,7 +151,7 @@ resource wordpressApp 'Microsoft.App/containerApps@2022-06-01-preview' = {
           }
           volumeMounts: [
             {
-              mountPath: '/home/site'
+              mountPath: '/home'
               volumeName: volumename
             }
           ]
