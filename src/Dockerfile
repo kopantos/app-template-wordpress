@@ -9,7 +9,7 @@ FROM appsvcorg/alpine-php-mysql:0.1
 
 # wordpress
 ENV WORDPRESS_SOURCE "/usr/src/wordpress"
-ENV WORDPRESS_HOME "/var/www/wordpress"
+ENV WORDPRESS_HOME "/home/site/wwwroot"
 
 #
 ENV DOCKER_BUILD_HOME "/dockerbuild"
@@ -44,6 +44,8 @@ RUN set -ex \
 COPY httpd-wordpress.conf $HTTPD_CONF_DIR/
 
 RUN set -ex \
+	##
+	&& ln -s $WORDPRESS_HOME /var/www/wordpress \
     ##
     && test -e /usr/local/bin/entrypoint.sh && mv /usr/local/bin/entrypoint.sh /usr/local/bin/entrypoint.bak
 	

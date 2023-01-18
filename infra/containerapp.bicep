@@ -143,7 +143,7 @@ resource wordpressApp 'Microsoft.App/containerApps@2022-06-01-preview' = {
           }
           volumeMounts: [
             {
-              mountPath: '/var/www/html'
+              mountPath: '/home/site'
               volumeName: volumename
             }
           ]
