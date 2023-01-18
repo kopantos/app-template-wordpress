@@ -13,6 +13,7 @@ param dbUser string
 @secure()
 param dbPassword string
 param deployWithRedis bool = false
+param wordpressImage string = 'kpantos/wordpress-alpine-php:latest'
 
 var dbPort = '3306'
 var volumename = 'wpstorage' //sensitive to casing and length. It has to be all lowercase.
@@ -142,7 +143,7 @@ resource wordpressApp 'Microsoft.App/containerApps@2022-06-01-preview' = {
               secretRef: 'wp-fqdn'
             }
           ]
-          image: 'kpantos/wordpress-alpine-php:latest'
+          image: wordpressImage
           name: 'wordpress'
           probes: []
           resources: {
