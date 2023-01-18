@@ -91,9 +91,9 @@ define('WP_DEBUG', false);
 
 /* That's all, stop editing! Happy blogging. */
 
-define('WP_HOME', 'http://'. filter_input($fqdn, 'HTTP_HOST', FILTER_SANITIZE_STRING));
-define('WP_SITEURL', 'http://'. filter_input($fqdn, 'HTTP_HOST', FILTER_SANITIZE_STRING));
-define('DOMAIN_CURRENT_SITE', filter_input($fqdn, 'HTTP_HOST', FILTER_SANITIZE_STRING));
+define('WP_HOME', 'http://'. $fqdn);
+define('WP_SITEURL', 'http://'. $fqdn);
+define('DOMAIN_CURRENT_SITE', $fqdn);
 
 
 /** Absolute path to the WordPress directory. */
