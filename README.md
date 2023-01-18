@@ -163,59 +163,16 @@ To do this, you will first need to **map the FQDN of the site you specified when
 
 Once you have mapped the FQDN to the public IP address, you can navigate to the site in your browser and complete the initial setup.
 ### New WordPress instance
-1. Navigate to the http://FQDN/wp-admin/setup-config.php using your browser
+1. Navigate to the http://FQDN using your browser
 
-    > **Note:** Don't worry if the stylesheet is broken, that's because the siteurl and home variables haven't been configured yet.
-
-1. Fill in the database name with the following values
-
-    ![Setup](assets/wp-installation.png)
-
-    + Database *Fill in the value **wordpress***, 
-    + Username *Fill in the MariaDB database user name wit the value **db_admin***, 
-    + Password *Fill in the password you have entered during provisioning for the MariaDB database*
-    
-        > **Note:** If you do not remember the password, you can retrieve it from the Azure Portal by navigating to the resource group and selecting the wordpressweb container app. Then click on the **secrets** at the left hand blade select **db-pass** ecret and clicl at the **Click to show value** button.
-
-    * Database Host *Is the name of the MariaDB server and should be of the form **{DATABASE-NAME}-prod.mariadb.database.azure.com***
-        
-        > **Note:** you can retrieve it from the Azure Portal by navigating to the resource group and selecting the MariaDB service. The server name is displayed at the top right corner.
-
-    * Table Prefix *Leave this as is*
-
-    When done click the submit button.
+1. Select the wordpress language and click Continue
+    ![Setup](assets/wp-install.png)
 
 1. Fill in the site title, the administrator username, password, and email address and click Install WordPress
 
-    ![Setup](assets/wp-setup.png)
+    ![Setup](assets/wp-install-step-1.png)
 
-1. Now that the setup is complete, you will need to change the site name and home configuration entries at the WordPress database. 
-
-    * To do this navigate to the Azure Portal and open a Bash cloud shell session
-    * Make sure you are loged in to the correct subscription using tha ```az account show``` command
-    * Create a firewall rule to connect to the database
-
-        ```bash
-        resourceGroup=<RESOURCE GROUP NAME>
-        mariaDBServer=<MARIADB SERVER NAME> #Just the <name> without -prod.mariadb.database.azure.com
-        clientIP=$(curl -s checkip.dyndns.org | sed -e 's/.*Current IP Address: //' -e 's/<.*$//')
-        az mariadb server firewall-rule create --resource-group $resourceGroup --server $mariaDBServer --name allow-client --start-ip-address $clientIP --end-ip-address $clientIP
-        ```
-    * Connect to the database using the following command
-
-        ```bash
-        username=<DB ADMIN USERNAME>    #db_admin@<name>
-        mysql -u $username -p -h <MARIADB SERVER NAME>-prod.mariadb.database.azure.com wordpress
-        ```
-    * Once connected, run the following commands to update the siteurl and home configuration entries
-
-        ```sql
-        use wordpress;
-        update wp_options set option_value = 'http://FQDN' where option_name = 'siteurl';
-        update wp_options set option_value = 'http://FQDN' where option_name = 'home';
-        ```
-
-1. Now you can navigate to the site in your browser and login using the username and password you specified during the setup.
+1. Now you can navigate to the site in your browser and login using the username and password you specified during the setup to access the administration console or navigate to the site to see it.
 
 ### Migrate an existing WordPress instance
 To migrate an existing WordPress instance, you will need to perform two tasks. First export the database from the existing site and import it into the new site and then copy the site files to the new site.

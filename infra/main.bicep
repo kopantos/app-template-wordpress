@@ -101,6 +101,8 @@ param adminPassword string = ''
 param tags object = {}
 @description('Whether to deploy a redis cache for the wordpress instance or not.')
 param deployWithRedis bool = false
+@description('The image to use for the wordpress container. Default is kpantos/wordpress-alpine-php:latest')
+param wordpressImage string = 'kpantos/wordpress-alpine-php:latest'
 
 var defaultTags = union({
   applicationName: applicationName
@@ -142,6 +144,7 @@ module main 'resources.bicep' = {
     adminPassword: adminPassword
     principalId: principalId
     deployWithRedis: deployWithRedis
+    wordpressImage: wordpressImage
   }
 }
 

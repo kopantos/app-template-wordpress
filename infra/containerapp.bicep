@@ -13,6 +13,7 @@ param dbUser string
 @secure()
 param dbPassword string
 param deployWithRedis bool = false
+param wordpressImage string = 'kpantos/wordpress-alpine-php:latest'
 
 var dbPort = '3306'
 var volumename = 'wpstorage' //sensitive to casing and length. It has to be all lowercase.
@@ -105,12 +106,8 @@ resource wordpressApp 'Microsoft.App/containerApps@2022-06-01-preview' = {
           value: dbPassword
         }
         {
-          name: 'wp-siteurl'
-          value: 'http://${wordpressFqdn}'
-        }
-        {
-          name: 'wp-home'
-          value: 'http://${wordpressFqdn}'
+          name: 'wp-fqdn'
+          value: wordpressFqdn
         }
       ]
     }
@@ -142,15 +139,11 @@ resource wordpressApp 'Microsoft.App/containerApps@2022-06-01-preview' = {
               secretRef: 'db-port'
             }
             {
-              name: 'WP_SITEURL'
-              secretRef: 'wp-siteurl'
-            }
-            {
-              name: 'WP_HOME'
-              secretRef: 'wp-home'
+              name: 'WP_FQDN'
+              secretRef: 'wp-fqdn'
             }
           ]
-          image: 'wordpress:latest'
+          image: wordpressImage
           name: 'wordpress'
           probes: []
           resources: {
@@ -159,7 +152,7 @@ resource wordpressApp 'Microsoft.App/containerApps@2022-06-01-preview' = {
           }
           volumeMounts: [
             {
-              mountPath: '/var/www/html'
+              mountPath: '/home'
               volumeName: volumename
             }
           ]

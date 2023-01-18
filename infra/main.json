@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.13.1.58284",
-      "templateHash": "14665363910122675432"
+      "templateHash": "11578585082408476323"
     }
   },
   "parameters": {
@@ -103,7 +103,14 @@
     "mariaDBPassword": {
       "type": "secureString"
     },
-    "environment": {
+    "principalId": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Id of the user or app to assign application roles"
+      }
+    },
+    "environmentName": {
       "type": "string",
       "defaultValue": "dev"
     },
@@ -138,24 +145,61 @@
     "tags": {
       "type": "object",
       "defaultValue": {}
+    },
+    "deployWithRedis": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Whether to deploy a redis cache for the wordpress instance or not."
+      }
+    },
+    "wordpressImage": {
+      "type": "string",
+      "defaultValue": "kpantos/wordpress-alpine-php:latest",
+      "metadata": {
+        "description": "The image to use for the wordpress container. Default is kpantos/wordpress-alpine-php:latest"
+      }
+    },
+    "enableTelemetry": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Enable usage and telemetry feedback to Microsoft."
+      }
     }
   },
   "variables": {
-    "defaultTags": "[union(createObject('applicationName', parameters('applicationName'), 'environment', parameters('environment')), parameters('tags'))]"
+    "defaultTags": "[union(createObject('applicationName', parameters('applicationName'), 'environment', parameters('environmentName')), parameters('tags'))]",
+    "telemetryId": "[format('69ef933a-eff0-450b-8a46-331cf62e160f-wordpress-{0}', parameters('location'))]"
   },
   "resources": [
     {
       "type": "Microsoft.Resources/resourceGroups",
       "apiVersion": "2021-04-01",
-      "name": "[format('rg-{0}-{1}', parameters('applicationName'), parameters('environment'))]",
+      "name": "[format('rg-{0}-{1}', parameters('applicationName'), parameters('environmentName'))]",
       "location": "[parameters('location')]",
       "tags": "[variables('defaultTags')]"
+    },
+    {
+      "condition": "[parameters('enableTelemetry')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2021-04-01",
+      "name": "[variables('telemetryId')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "mode": "Incremental",
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+          "contentVersion": "1.0.0.0",
+          "resources": {}
+        }
+      }
     },
     {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2020-10-01",
       "name": "NamingDeployment",
-      "resourceGroup": "[format('rg-{0}-{1}', parameters('applicationName'), parameters('environment'))]",
+      "resourceGroup": "[format('rg-{0}-{1}', parameters('applicationName'), parameters('environmentName'))]",
       "properties": {
         "expressionEvaluationOptions": {
           "scope": "inner"
@@ -165,14 +209,14 @@
           "suffix": {
             "value": [
               "[parameters('applicationName')]",
-              "[parameters('environment')]"
+              "[parameters('environmentName')]"
             ]
           },
           "uniqueLength": {
             "value": 6
           },
           "uniqueSeed": {
-            "value": "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('rg-{0}-{1}', parameters('applicationName'), parameters('environment')))]"
+            "value": "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('rg-{0}-{1}', parameters('applicationName'), parameters('environmentName')))]"
           }
         },
         "template": {
@@ -1208,14 +1252,14 @@
         }
       },
       "dependsOn": [
-        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('rg-{0}-{1}', parameters('applicationName'), parameters('environment')))]"
+        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('rg-{0}-{1}', parameters('applicationName'), parameters('environmentName')))]"
       ]
     },
     {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2020-10-01",
       "name": "MainDeployment",
-      "resourceGroup": "[format('rg-{0}-{1}', parameters('applicationName'), parameters('environment'))]",
+      "resourceGroup": "[format('rg-{0}-{1}', parameters('applicationName'), parameters('environmentName'))]",
       "properties": {
         "expressionEvaluationOptions": {
           "scope": "inner"
@@ -1226,7 +1270,7 @@
             "value": "[parameters('location')]"
           },
           "naming": {
-            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('rg-{0}-{1}', parameters('applicationName'), parameters('environment'))), 'Microsoft.Resources/deployments', 'NamingDeployment'), '2020-10-01').outputs.names.value]"
+            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('rg-{0}-{1}', parameters('applicationName'), parameters('environmentName'))), 'Microsoft.Resources/deployments', 'NamingDeployment'), '2020-10-01').outputs.names.value]"
           },
           "tags": {
             "value": "[variables('defaultTags')]"
@@ -1251,6 +1295,15 @@
           },
           "adminPassword": {
             "value": "[parameters('adminPassword')]"
+          },
+          "principalId": {
+            "value": "[parameters('principalId')]"
+          },
+          "deployWithRedis": {
+            "value": "[parameters('deployWithRedis')]"
+          },
+          "wordpressImage": {
+            "value": "[parameters('wordpressImage')]"
           }
         },
         "template": {
@@ -1260,7 +1313,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.13.1.58284",
-              "templateHash": "9757454742461110512"
+              "templateHash": "5856527050629352494"
             }
           },
           "parameters": {
@@ -1320,6 +1373,27 @@
             "adminPassword": {
               "type": "secureString",
               "defaultValue": ""
+            },
+            "principalId": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "The principal ID of the service principal that will be deploying the resources. If not specified, the current user will be used."
+              }
+            },
+            "deployWithRedis": {
+              "type": "bool",
+              "defaultValue": false,
+              "metadata": {
+                "description": "Whether to deploy a redis cache for the wordpress instance or not."
+              }
+            },
+            "wordpressImage": {
+              "type": "string",
+              "defaultValue": "kpantos/wordpress-alpine-php:latest",
+              "metadata": {
+                "description": "The wordpress container image to use."
+              }
             }
           },
           "variables": {
@@ -2429,7 +2503,8 @@
                         "value": "[parameters('mariaDBPassword')]"
                       }
                     ]
-                  }
+                  },
+                  "accessPolicies": "[if(not(empty(parameters('principalId'))), createObject('value', createArray(createObject('objectId', parameters('principalId'), 'tenantId', subscription().tenantId, 'permissions', createObject('secrets', createArray('get'))))), createObject('value', createArray()))]"
                 },
                 "template": {
                   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
@@ -2641,6 +2716,12 @@
                       },
                       "secretName": "[variables('secretNames').mariaDBPassword]"
                     }
+                  },
+                  "deployWithRedis": {
+                    "value": "[parameters('deployWithRedis')]"
+                  },
+                  "wordpressImage": {
+                    "value": "[parameters('wordpressImage')]"
                   }
                 },
                 "template": {
@@ -2650,7 +2731,7 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.13.1.58284",
-                      "templateHash": "2045624079841801369"
+                      "templateHash": "6521962298184891226"
                     }
                   },
                   "parameters": {
@@ -2690,6 +2771,14 @@
                     },
                     "dbPassword": {
                       "type": "secureString"
+                    },
+                    "deployWithRedis": {
+                      "type": "bool",
+                      "defaultValue": false
+                    },
+                    "wordpressImage": {
+                      "type": "string",
+                      "defaultValue": "kpantos/wordpress-alpine-php:latest"
                     }
                   },
                   "variables": {
@@ -2698,6 +2787,50 @@
                     "dbName": "wordpress"
                   },
                   "resources": [
+                    {
+                      "condition": "[parameters('deployWithRedis')]",
+                      "type": "Microsoft.App/containerApps",
+                      "apiVersion": "2022-06-01-preview",
+                      "name": "[format('{0}redis', parameters('containerAppName'))]",
+                      "location": "[parameters('location')]",
+                      "tags": "[parameters('tags')]",
+                      "properties": {
+                        "configuration": {
+                          "activeRevisionsMode": "Single",
+                          "ingress": {
+                            "allowInsecure": true,
+                            "external": true,
+                            "targetPort": 6379,
+                            "transport": "auto"
+                          }
+                        },
+                        "environmentId": "[reference(resourceId('Microsoft.Resources/deployments', 'containerAppEnv-deployement'), '2020-10-01').outputs.containerEnvId.value]",
+                        "template": {
+                          "containers": [
+                            {
+                              "args": [],
+                              "command": [],
+                              "env": [],
+                              "image": "redis:latest",
+                              "name": "redis",
+                              "probes": [],
+                              "resources": {
+                                "cpu": "[json('0.25')]",
+                                "memory": "0.5Gi"
+                              },
+                              "volumeMounts": []
+                            }
+                          ],
+                          "scale": {
+                            "minReplicas": 1
+                          },
+                          "volumes": []
+                        }
+                      },
+                      "dependsOn": [
+                        "[resourceId('Microsoft.Resources/deployments', 'containerAppEnv-deployement')]"
+                      ]
+                    },
                     {
                       "type": "Microsoft.App/containerApps",
                       "apiVersion": "2022-06-01-preview",
@@ -2735,12 +2868,8 @@
                               "value": "[parameters('dbPassword')]"
                             },
                             {
-                              "name": "wp-siteurl",
-                              "value": "[format('http://{0}', parameters('wordpressFqdn'))]"
-                            },
-                            {
-                              "name": "wp-home",
-                              "value": "[format('http://{0}', parameters('wordpressFqdn'))]"
+                              "name": "wp-fqdn",
+                              "value": "[parameters('wordpressFqdn')]"
                             }
                           ]
                         },
@@ -2772,15 +2901,11 @@
                                   "secretRef": "db-port"
                                 },
                                 {
-                                  "name": "WP_SITEURL",
-                                  "secretRef": "wp-siteurl"
-                                },
-                                {
-                                  "name": "WP_HOME",
-                                  "secretRef": "wp-home"
+                                  "name": "WP_FQDN",
+                                  "secretRef": "wp-fqdn"
                                 }
                               ],
-                              "image": "wordpress:latest",
+                              "image": "[parameters('wordpressImage')]",
                               "name": "wordpress",
                               "probes": [],
                               "resources": {
@@ -2789,7 +2914,7 @@
                               },
                               "volumeMounts": [
                                 {
-                                  "mountPath": "/var/www/html",
+                                  "mountPath": "/home",
                                   "volumeName": "[variables('volumename')]"
                                 }
                               ]
@@ -2959,6 +3084,10 @@
                     "webFqdn": {
                       "type": "string",
                       "value": "[reference(resourceId('Microsoft.App/containerApps', format('{0}web', parameters('containerAppName'))), '2022-06-01-preview').latestRevisionFqdn]"
+                    },
+                    "redisFqdn": {
+                      "type": "string",
+                      "value": "[reference(resourceId('Microsoft.App/containerApps', format('{0}redis', parameters('containerAppName'))), '2022-06-01-preview').latestRevisionFqdn]"
                     },
                     "webLatestRevisionName": {
                       "type": "string",
@@ -3545,7 +3674,7 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.13.1.58284",
-                      "templateHash": "13060439847380540126"
+                      "templateHash": "13098376783973391966"
                     }
                   },
                   "parameters": {
@@ -3574,9 +3703,9 @@
                   },
                   "variables": {
                     "resourceNames": {
-                      "nicName": "[parameters('naming').storageAccount.nameUnique]",
-                      "ipConfigurationName": "[parameters('naming').storageAccount.nameUnique]",
-                      "vmName": "[parameters('naming').storageAccount.nameUnique]"
+                      "nicName": "jumphost-nic",
+                      "ipConfigurationName": "jumphost-nic-ipconfig",
+                      "vmName": "jumphost"
                     }
                   },
                   "resources": [
@@ -3670,15 +3799,15 @@
         }
       },
       "dependsOn": [
-        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('rg-{0}-{1}', parameters('applicationName'), parameters('environment'))), 'Microsoft.Resources/deployments', 'NamingDeployment')]",
-        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('rg-{0}-{1}', parameters('applicationName'), parameters('environment')))]"
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, format('rg-{0}-{1}', parameters('applicationName'), parameters('environmentName'))), 'Microsoft.Resources/deployments', 'NamingDeployment')]",
+        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', format('rg-{0}-{1}', parameters('applicationName'), parameters('environmentName')))]"
       ]
     }
   ],
   "outputs": {
     "resourceGroupName": {
       "type": "string",
-      "value": "[format('rg-{0}-{1}', parameters('applicationName'), parameters('environment'))]"
+      "value": "[format('rg-{0}-{1}', parameters('applicationName'), parameters('environmentName'))]"
     }
   }
 }
