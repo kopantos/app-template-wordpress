@@ -50,5 +50,8 @@ rm -rf $WORDPRESS_SOURCE
 echo "Starting SSH ..."
 rc-service sshd start
 
+echo "Starting local Redis Server ..."
+redis-server --daemonize yes
+
 echo "Starting Apache httpd -D FOREGROUND ..."
 apachectl start -D FOREGROUND
