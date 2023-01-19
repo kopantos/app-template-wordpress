@@ -109,7 +109,7 @@ define('WP_REDIS_READ_TIMEOUT', 1 );
 define('WP_REDIS_DATABASE', 0);
 
 // supported clients: `phpredis`, `credis`, `predis` and `hhvm`
-// define( 'WP_REDIS_CLIENT', 'phpredis' );
+define( 'WP_REDIS_CLIENT', 'phpredis' );
 
 // automatically delete cache keys after 7 days
 // define( 'WP_REDIS_MAXTTL', 60 * 60 * 24 * 7 );

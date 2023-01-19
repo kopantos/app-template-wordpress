@@ -42,10 +42,10 @@ resource redis 'Microsoft.App/containerApps@2022-06-01-preview' = if (deployWith
     configuration: {
       activeRevisionsMode: 'Single'
       ingress: {
-        allowInsecure: true
-        external: true
+        external: false
         targetPort: 6379
-        transport: 'auto'
+        exposedPort: 6379
+        transport: 'tcp'
       }
     }
     environmentId: environment.outputs.containerEnvId
