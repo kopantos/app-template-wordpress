@@ -27,7 +27,7 @@ setup_wordpress(){
 	        git branch --track $GIT_BRANCH origin/$GIT_BRANCH && git checkout $GIT_BRANCH
 	    fi       
         #IF App settings of DB are exist, Use Special wp-config file.            
-        if [ $DATABASE_HOST ]; then
+        if [ $DB_HOST ]; then
             echo "INFO: External Mysql is used."                
             # show_wordpress_db_config
             cp $WORDPRESS_SOURCE/wp-config.php $WORDPRESS_HOME/ && chmod 777 $WORDPRESS_HOME/wp-config.php            
