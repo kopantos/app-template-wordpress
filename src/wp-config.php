@@ -29,6 +29,8 @@ $connectstr_dbusername = getenv('DB_USER');;
 $connectstr_dbpassword = getenv('DB_PASS');
 $fqdn = getenv('WP_FQDN');
 
+$redis_host = getenv('WP_REDIS_HOST');
+$redis_password = getenv('WP_REDIS_PASSWORD');
 
 define('DB_NAME', $connectstr_dbname);
 
@@ -95,6 +97,25 @@ define('WP_HOME', 'http://'. $fqdn);
 define('WP_SITEURL', 'http://'. $fqdn);
 define('DOMAIN_CURRENT_SITE', $fqdn);
 
+define('WP_REDIS_HOST', $redis_host);
+define('WP_REDIS_PORT', 6379);
+if ( !empty($redis_password) )
+	define('WP_REDIS_PASSWORD', $redis_password);
+define('WP_REDIS_TIMEOUT', 1 );
+define('WP_REDIS_READ_TIMEOUT', 1 );
+
+// change the database for each site to avoid cache collisions
+// values 0-15 are valid in a default redis config.
+define('WP_REDIS_DATABASE', 0);
+
+// supported clients: `phpredis`, `credis`, `predis` and `hhvm`
+// define( 'WP_REDIS_CLIENT', 'phpredis' );
+
+// automatically delete cache keys after 7 days
+// define( 'WP_REDIS_MAXTTL', 60 * 60 * 24 * 7 );
+
+// bypass the object cache, useful for debugging
+// define( 'WP_REDIS_DISABLED', true );
 
 /** Absolute path to the WordPress directory. */
 if ( !defined('ABSPATH') )
