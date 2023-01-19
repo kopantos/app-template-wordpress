@@ -113,7 +113,7 @@ resource wordpressApp 'Microsoft.App/containerApps@2022-06-01-preview' = {
         }
         (deployWithRedis) ? {
           name: 'redis-host'
-          value: redis.properties.latestRevisionFqdn
+          value: redis.properties.configuration.ingress.fqdn
         } : { 
           name: 'redis-host'
           value: 'localhost'
@@ -196,8 +196,8 @@ resource wordpressApp 'Microsoft.App/containerApps@2022-06-01-preview' = {
   }
 }
 
-output webFqdn string = wordpressApp.properties.latestRevisionFqdn
-output redisFqdn string = redis.properties.latestRevisionFqdn
+output webFqdn string = wordpressApp.properties.configuration.ingress.fqdn
+output redisFqdn string = redis.properties.configuration.ingress.fqdn
 output webLatestRevisionName string = wordpressApp.properties.latestRevisionName
 output envSuffix string = environment.outputs.envSuffix
 output loadBalancerIP string = environment.outputs.loadBalancerIP
