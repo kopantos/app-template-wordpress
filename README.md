@@ -47,7 +47,7 @@ You can deploy this app template either using the Azure Developer CLI (azd) or t
 1. Login to azure from your terminal. You can do this by running the following command:
 
     ```
-    az login
+    azd login
     ```
 1. Verify that you are logged in by running the following command:
 
