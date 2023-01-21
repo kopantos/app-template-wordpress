@@ -174,51 +174,11 @@ Once you have mapped the FQDN to the public IP address, you can navigate to the 
 
 1. Now you can navigate to the site in your browser and login using the username and password you specified during the setup to access the administration console or navigate to the site to see it.
 
-### Migrate an existing WordPress instance
-To migrate an existing WordPress instance, you will need to perform two tasks. First export the database from the existing site and import it into the new site and then copy the site files to the new site.
+### [Migrate an existing WordPress instance](migrate-wordpress.md)
 
-To do this navigate to the Azure Portal and open a Bash cloud shell session. Make sure you are loged in to the correct subscription using tha ```az account show``` command
+### [Enanble Redis Cache](redis-cache.md)
 
-1. Create a firewall rule to connect to the database
-
-    ```bash
-    resourceGroup=<RESOURCE GROUP NAME>
-    mariaDBServer=<MARIADB SERVER NAME> #<name> with out the domain name
-    clientIP=$(curl -s checkip.dyndns.org | sed -e 's/.*Current IP Address: //' -e 's/<.*$//')
-    az mariadb server firewall-rule create --resource-group $resourceGroup --server $mariaDBServer --name allow-client --start-ip-address $clientIP --end-ip-address $clientIP
-    ```
-
-1. Connect to the database using the following command
-
-    ```bash
-    username=<DB ADMIN USERNAME>    #db_admin@<name>
-    mysql -u $username -p -h $mariaDBServer
-    ```
-1. Once connected, restore your existing wordpress database
-
-    ```sql
-    mysql -u $username -p -h <MARIADB SERVER NAME>-prod.mariadb.database.azure.com wordpress < <PATH TO YOUR BACKUP FILE>
-    ```
-1. Make sure the siteurl and home configuration entries are pointing to the new site
-    ```sql
-    use wordpress;
-    update wp_options set option_value = 'http://FQDN' where option_name = 'siteurl';
-    update wp_options set option_value = 'http://FQDN' where option_name = 'home';
-    ```
-1. Create a firewall rule to connect to the Azure storage account
-    ```bash
-    resourceGroup=<RESOURCE GROUP NAME>
-    storageAccount=<STORAGE ACCOUNT NAME>
-    clientIP=<YOUR IP>
-    az storage account firewall-rule create --resource-group $resourceGroup --account-name $storageAccount --name allow-client --start-ip $clientIP --end-ip $clientIP
-
-    azcopy login --tenant-id <TENANT ID>
-    azcopy copy 'myDirectory\*' 'https://$storageAccount.file.core.windows.net/fileshare' --recursive
-    ```
-
-1. Map the FQDN of your site to the public IP address of the Azure Application Gateway. You can do this by adding an entry to your hosts file so that only you can access the new WordPress instance.
-
-> **Note:** This is a basic migration guide. As WordPress sites often contain various customizations you might need to refer to the [WordPress documentation](https://wordpress.org/support/article/moving-wordpress/) for more information on migrating WordPress sites.
+### [The Wordpress Docker Image](customize-docker-image.md)
 
 ## Clean up resources
 When you are done, you can delete all the Azure resources created with this template by running the following command:
@@ -233,20 +193,12 @@ or if you deployed using the azd cli
 ```
 azd down
 ```
-## Contributing
 
-This project welcomes contributions and suggestions.  Most contributions require you to agree to a
-Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
-the rights to use your contribution. For details, visit https://cla.opensource.microsoft.com.
+## [Changelog](CHANGELOG.md)
 
-When you submit a pull request, a CLA bot will automatically determine whether you need to provide
-a CLA and decorate the PR appropriately (e.g., status check, comment). Simply follow the instructions
-provided by the bot. You will only need to do this once across all repos using our CLA.
+## [Contributing](CONTRIBUTING.md)
 
-This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
-For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
-contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
-
+## [License](LICENSE.md)
 ## Trademarks
 
 This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft 
