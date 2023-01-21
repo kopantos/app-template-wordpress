@@ -189,12 +189,16 @@ module envdnszone 'modules/privateDnsZone.module.bicep' = {
     ]
     aRecords: [
       {
-        name: wordpressapp.outputs.webLatestRevisionName
+        name: wordpressapp.outputs.webFqdn
         ipv4Address: wordpressapp.outputs.loadBalancerIP
       }
+      (deployWithRedis)?{
+        name: wordpressapp.outputs.redisFqdn
+        ipv4Address: wordpressapp.outputs.loadBalancerIP
+      }: {}
     ]
     tags: tags
-    registrationEnabled: true
+    registrationEnabled: false
   }
 }
 

@@ -14,6 +14,8 @@ param dbUser string
 param dbPassword string
 param deployWithRedis bool = false
 param wordpressImage string = 'kpantos/wordpress-alpine-php:latest'
+@secure()
+param redisPassword string = ''
 
 var dbPort = '3306'
 var volumename = 'wpstorage' //sensitive to casing and length. It has to be all lowercase.
@@ -40,10 +42,10 @@ resource redis 'Microsoft.App/containerApps@2022-06-01-preview' = if (deployWith
     configuration: {
       activeRevisionsMode: 'Single'
       ingress: {
-        allowInsecure: true
         external: true
         targetPort: 6379
-        transport: 'auto'
+        exposedPort: 6379
+        transport: 'tcp'
       }
     }
     environmentId: environment.outputs.containerEnvId
@@ -109,6 +111,20 @@ resource wordpressApp 'Microsoft.App/containerApps@2022-06-01-preview' = {
           name: 'wp-fqdn'
           value: wordpressFqdn
         }
+        (deployWithRedis) ? {
+          name: 'redis-host'
+          value: redis.properties.configuration.ingress.fqdn
+        } : { 
+          name: 'redis-host'
+          value: 'localhost'
+        }
+        (!empty(redisPassword))? {
+          name: 'redis-pass'
+          value: redisPassword
+        } : { 
+          name: 'redis-pass'
+          value: ''
+        }
       ]
     }
     environmentId: environment.outputs.containerEnvId
@@ -142,6 +158,14 @@ resource wordpressApp 'Microsoft.App/containerApps@2022-06-01-preview' = {
               name: 'WP_FQDN'
               secretRef: 'wp-fqdn'
             }
+            { 
+              name: 'WP_REDIS_HOST'
+              secretRef: 'redis-host'
+            }
+            { 
+              name: 'WP_REDIS_PASSWORD'
+              secretRef: 'redis-pass'
+            }            
           ]
           image: wordpressImage
           name: 'wordpress'
@@ -172,8 +196,8 @@ resource wordpressApp 'Microsoft.App/containerApps@2022-06-01-preview' = {
   }
 }
 
-output webFqdn string = wordpressApp.properties.latestRevisionFqdn
-output redisFqdn string = redis.properties.latestRevisionFqdn
+output webFqdn string = wordpressApp.properties.configuration.ingress.fqdn
+output redisFqdn string = redis.properties.configuration.ingress.fqdn
 output webLatestRevisionName string = wordpressApp.properties.latestRevisionName
 output envSuffix string = environment.outputs.envSuffix
 output loadBalancerIP string = environment.outputs.loadBalancerIP

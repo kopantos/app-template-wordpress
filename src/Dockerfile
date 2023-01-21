@@ -1,61 +1,44 @@
 #
 # Dockerfile for WordPress
 #
-FROM appsvcorg/alpine-php-mysql:0.1
-
+FROM appsvcorg/nginx-fpm:php7.3.4-redis
 # ========
 # ENV vars
 # ========
+# ssh
 
+ENV SUPERVISOR_LOG_DIR "/var/log/supervisor"
+
+ENV SSH_PASSWD "root:Docker!"
+ENV SSH_PORT 2222
+#nginx
+ENV NGINX_LOG_DIR "/var/log/nginx"
+#php
+ENV PHP_HOME "/usr/local/etc/php"
+ENV PHP_CONF_DIR $PHP_HOME
+ENV PHP_CONF_FILE $PHP_CONF_DIR"/php.ini"
 # wordpress
 ENV WORDPRESS_SOURCE "/usr/src/wordpress"
 ENV WORDPRESS_HOME "/home/site/wwwroot"
-
 #
 ENV DOCKER_BUILD_HOME "/dockerbuild"
-
 # ====================
-# Download and Install
-# ~. tools
-# 1. redis
-# 2. wordpress
 # ====================
-
-WORKDIR $DOCKER_BUILD_HOME
-RUN set -ex \
-	# --------
-	# 1. redis
-	# --------
-        && apk add --update redis \
-	# ------------	
-	# 2. wordpress
-	# ------------
-	&& mkdir -p $WORDPRESS_SOURCE \
-        # cp in final
-	# ----------
-	# ~. clean up
-	# ----------
-	&& rm -rf /var/cache/apk/* 
-
-# =========
-# Configure
-# =========
-# httpd confs
-COPY httpd-wordpress.conf $HTTPD_CONF_DIR/
-
-RUN set -ex \
-	##
-	&& ln -s $WORDPRESS_HOME /var/www/wordpress \
-    ##
-    && test -e /usr/local/bin/entrypoint.sh && mv /usr/local/bin/entrypoint.sh /usr/local/bin/entrypoint.bak
-	
-# =====
-# final
-# =====
-COPY wp.tar.gz $WORDPRESS_SOURCE/
+# wordpress
 COPY wp-config.php $WORDPRESS_SOURCE/
+# supervisor
+COPY supervisord.conf /etc/
+# php
+COPY uploads.ini /usr/local/etc/php/conf.d/
+# nginx
 
-COPY entrypoint.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/entrypoint.sh
-EXPOSE 2222 80
+# override nginx config
+COPY nginx_conf/nginx.conf /etc/nginx/nginx.conf
+COPY nginx_conf/default.conf /etc/nginx/conf.d/default.conf
+COPY nginx_conf/spec-settings.conf /etc/nginx/conf.d/spec-settings.conf
+
+#
+COPY local_bin/. /usr/local/bin/
+RUN chmod -R +x /usr/local/bin
+EXPOSE $SSH_PORT 80
 ENTRYPOINT ["entrypoint.sh"]
